@@ -44,7 +44,7 @@ Run each step in sequence. Within each step, script order doesn't matter.
 ## Workflow overview
 
 Step | Command | Memory | Parallel? | Computer | Running time
---- | --- | ---
+--- | --- | --- | --- | --- | --- 
 Step 0: Generate MIPs metadata | groupMIPsByPublishedName |  |  |  |  minutes
 Step 1: Prepare LM and EM JSON input | createColorDepthSearchJSONInput |  |  |  | minutes
 
