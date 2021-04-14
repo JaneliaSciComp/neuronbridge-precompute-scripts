@@ -33,3 +33,4 @@ MIPSDIR="${WORKINGDIR}/mips"
 # relative subdirectory names
 EMDIR="em_bodies"
 SPLITGAL4DIR="split_gal4_lines"
+MCFODIR="gen1_mcfo_lines"
