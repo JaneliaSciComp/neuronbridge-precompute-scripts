@@ -1,6 +1,7 @@
 # global parameters for most or all steps in the workflow
 
-# to be edited by the user for local use:
+# --------------------
+# values expected be edited by the user:
 
 # locations
 export WORKINGDIR=/nrs/scicompsoft/olbrisd/cdstests/working
@@ -21,7 +22,10 @@ export JAVA_OPTIONS=""
 
 
 
-# values below here are not expected to change
+
+# --------------------
+# values below here are not expected to change; they relate to filenames, 
+#   directory structure, etc:
 
 # JACS service
 JACSV2URL='https://workstation.int.janelia.org/SCSW/JACS2SyncServices/v2'
@@ -34,3 +38,4 @@ MIPSDIR="${WORKINGDIR}/mips"
 EMDIR="em_bodies"
 SPLITGAL4DIR="split_gal4_lines"
 MCFODIR="gen1_mcfo_lines"
+
