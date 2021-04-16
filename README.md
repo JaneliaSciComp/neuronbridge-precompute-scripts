@@ -38,7 +38,7 @@ Prerequisites:
     + note that they expire in 24 hours
     + there's a helper script in this repository that will prompt for a password and output the retrieved token
         * it's a Python script that requires third-party "requests" library installed
-        * usage: `export JACSTOKEN=$(get-jacs-token.py)`
+        * usage: `export JACSTOKEN=$(util/get-jacs-token.py)`
         * note that the password prompt and any warnings will not be captured in the variable
 - user needs AWS auth
 - the working directory should have enough disk space (3T+)
@@ -69,11 +69,26 @@ General notes:
 ## Workflow overview
 
 Step | Command | Memory | Parallel? | Computer | Running time
---- | --- | --- | --- | --- | --- 
+---- | ------- | ------ | --------- | -------- | ------------ 
 Step 0: Generate MIPs metadata | `groupMIPsByPublishedName` |  |  |  |  several minutes
 Step 1: Prepare LM and EM JSON input | `createColorDepthSearchJSONInput` |  |  |  | < 1 hour
+Step 1': Replace image URLs (?) | `replaceAttributes` | | | | minutes (?)
+Step 2: Compute color depth matches | `searchFromJSON` |  | :white_check_mark: | mouse1, mouse2  | several hours
+Step 3: Calculate gradient score | `gradientScore` | 180G+  | :white_check_mark: | mouse1,2 | days to a week          
+Step 4: Update the gradient score | `gradientScoresFromMatchedResults` | 480G | | imagecatcher | hours            
+Step 5: Merge flyem results | `mergeResults` | | | | minutes          
+Step 6: Normalize and rank results | `normalizeScores` | | | | minutes       
+Step 7: Upload to AWS S3 | n/a | | | | hour
 
+## Computational resources
 
+Computer | CPU | Memory | AWS CLI? | Notes
+-------- | --- | ------ | -------- | -----
+mouse1, mouse2 | 40 | 192G |  | used for parallel jobs (ie, needing lots of individual CPUs)
+imagecatcher | 28 | 500G | :white_check_mark: | used for high-memory jobs
+c13u05 (aka nextflow) | 40 | 128G |  |
+personal workstations |  |  |  | can be used for low resource jobs
+cluster |  |  |  | can be used for parallel jobs if time critical and budget available
 
 ## Step 0: generate MIPs metadata
 
@@ -90,6 +105,7 @@ Step 1: Prepare LM and EM JSON input | `createColorDepthSearchJSONInput` |  |  |
 **Expected output:**
 - expected numbers as of April 2021
 - files and directories created:
+```
     working/mips
         /em_bodies
             ~30k json files
@@ -97,6 +113,7 @@ Step 1: Prepare LM and EM JSON input | `createColorDepthSearchJSONInput` |  |  |
             ~600 json files
         /gen1_mcfo_lines
             ~5k json files
+```
 - each json file is small, most <= 10kb
 
 ## Step 1: create JSON input files
@@ -108,20 +125,31 @@ Step 1: Prepare LM and EM JSON input | `createColorDepthSearchJSONInput` |  |  |
     + in any order
     + on any computer
     + `step1/em-input-json.sh`
-    + gal4
-    + mcfo
+    + `step1/splitgal4-input-json.sh`
+    + `step1/mcfo-input-json.sh`
 
 **Expected output:**
 - files created:
+```
     working/mips
         flyem_hemibrain-withDirs.json
-        gal4
-        mcfo
+        all_flylight_split_gal4-withDirs.json
+        flylight_gen1_mcfo_published-withDirs.json
+```
 - each json file is mid-sized, ~5-500Mb
 
 
+## maybe image URL update step?
 
 
+## Step 2: Compute color depth matches
+
+**Run:**
+
+
+**Expected output:**
+- files created:
+- 
 
 
 
