@@ -23,4 +23,4 @@ java -jar ${CDS_JAR} \
     --segmentation-channel-base 1 \
     --urls-relative-to 1 \
     -od ${MIPSDIR} \
-    --output-filename flylight_gen1_mcfo_published-withDirs \
+    --output-filename ${MCFOINPUT}

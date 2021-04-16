@@ -1,7 +1,7 @@
 # global parameters for most or all steps in the workflow
 
-# --------------------
-# values expected be edited by the user:
+# ------------------------------------------------------------
+# global values expected be edited by the user:
 
 # locations
 export WORKINGDIR=/nrs/scicompsoft/olbrisd/cdstests/working
@@ -22,8 +22,24 @@ export JAVA_OPTIONS=""
 
 
 
+# ------------------------------------------------------------
+# values that describe the data for use in later step; the user will fill these in
 
-# --------------------
+# data sizes to be filled in by the user
+# TOTAL_MASKS: `grep imageURL ${MIPSDIR}/${EMINPUT} | wc`
+export TOTAL_MASKS=44593
+# TOTAL_LIBRARIES: `grep imageURL ${MIPSDIR}/${MCFOINPUT} | wc`
+export TOTAL_LIBRARIES=7391
+
+
+
+
+
+
+
+
+
+# ------------------------------------------------------------
 # values below here are not expected to change; they relate to filenames, 
 #   directory structure, etc:
 
@@ -38,4 +54,11 @@ MIPSDIR="${WORKINGDIR}/mips"
 EMDIR="em_bodies"
 SPLITGAL4DIR="split_gal4_lines"
 MCFODIR="gen1_mcfo_lines"
+
+# filenames
+
+# input json files
+EMINPUT="flyem_hemibrain-withDirs.json"
+SPLITGAL4INPUT="all_flylight_split_gal4-withDirs.json"
+MCFOINPUT="flylight_gen1_mcfo_published-withDirs.json"
 
