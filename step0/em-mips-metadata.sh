@@ -12,5 +12,5 @@ java -jar ${CDS_JAR} \
     -l ${LIBNAME} \
     --include-mips-without-publishing-name 3 \
     --urls-relative-to 1 \
-    -od ${MIPSDIR} \
-    -emdir ${EMDIR}
+    -od ${MIPS_DIR} \
+    -emdir ${EM_DIR}

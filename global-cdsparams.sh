@@ -4,10 +4,10 @@
 # global values expected be edited by the user:
 
 # locations
-export WORKINGDIR=/nrs/scicompsoft/olbrisd/cdstests/working
+export WORKING_DIR=/nrs/scicompsoft/olbrisd/cdstests/working
 
 CDS_JAR_VERSION="2.7.0"
-export CDS_JAR=${WORKINGDIR}/colormipsearch/target/colormipsearch-${CDS_JAR_VERSION}-jar-with-dependencies.jar
+export CDS_JAR=${WORKING_DIR}/colormipsearch/target/colormipsearch-${CDS_JAR_VERSION}-jar-with-dependencies.jar
 
 
 # JAVA options
@@ -26,9 +26,9 @@ export JAVA_OPTIONS=""
 # values that describe the data for use in later step; the user will fill these in
 
 # data sizes to be filled in by the user
-# TOTAL_MASKS: `grep imageURL ${MIPSDIR}/${EMINPUT} | wc`
+# TOTAL_MASKS: `grep imageURL ${MIPS_DIR}/${EM_INPUT} | wc`
 export TOTAL_MASKS=44593
-# TOTAL_LIBRARIES: `grep imageURL ${MIPSDIR}/${MCFOINPUT} | wc`
+# TOTAL_LIBRARIES: `grep imageURL ${MIPS_DIR}/${MCFO_INPUT} | wc`
 export TOTAL_LIBRARIES=7391
 
 
@@ -47,18 +47,18 @@ export TOTAL_LIBRARIES=7391
 JACSV2URL='https://workstation.int.janelia.org/SCSW/JACS2SyncServices/v2'
 
 
-# directories within WORKINGDIR:
-MIPSDIR="${WORKINGDIR}/mips"
+# directories within WORKING_DIR:
+MIPS_DIR="${WORKING_DIR}/mips"
 
 # relative subdirectory names
-EMDIR="em_bodies"
-SPLITGAL4DIR="split_gal4_lines"
-MCFODIR="gen1_mcfo_lines"
+EM_DIR="em_bodies"
+SG4_DIR="split_gal4_lines"
+MCFO_DIR="gen1_mcfo_lines"
 
 # filenames
 
 # input json files
-EMINPUT="flyem_hemibrain-withDirs.json"
-SPLITGAL4INPUT="all_flylight_split_gal4-withDirs.json"
-MCFOINPUT="flylight_gen1_mcfo_published-withDirs.json"
+EM_INPUT="flyem_hemibrain-withDirs.json"
+SG4_INPUT="all_flylight_split_gal4-withDirs.json"
+MCFO_INPUT="flylight_gen1_mcfo_published-withDirs.json"
 

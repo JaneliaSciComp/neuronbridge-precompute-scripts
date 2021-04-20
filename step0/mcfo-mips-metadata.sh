@@ -16,6 +16,6 @@ java -jar ${CDS_JAR} \
     --segmented-image-handling 1 \
     --segmented-mips-variant searchable_neurons \
     --urls-relative-to 1 \
-    -od ${MIPSDIR} \
-    -lmdir ${MCFODIR}
+    -od ${MIPS_DIR} \
+    -lmdir ${MCFO_DIR}
 

@@ -16,8 +16,8 @@ java -jar ${CDS_JAR} \
     --segmented-image-handling 1 \
     --segmented-mips-variant searchable_neurons \
     --urls-relative-to 1 \
-    -od ${MIPSDIR} \
-    -lmdir ${SPLITGAL4DIR}
+    -od ${MIPS_DIR} \
+    -lmdir ${SG4_DIR}
 
 
 LIBNAME2=flylight_splitgal4_drivers
@@ -35,6 +35,6 @@ java -jar ${CDS_JAR} \
     --segmented-mips-variant searchable_neurons \
     --excluded-libraries flylight_split_gal4_published \
     --urls-relative-to 1 \
-    -od ${MIPSDIR} \
-    -lmdir ${SPLITGAL4DIR}
+    -od ${MIPS_DIR} \
+    -lmdir ${SG4_DIR}
 
