@@ -19,5 +19,5 @@ java -jar ${CDS_JAR} \
     --segmented-image-handling 2 \
     --segmented-mips-variant searchable_neurons \
     --urls-relative-to 1 \
-    -od ${MIPSDIR} \
-    --output-filename ${EMINPUT}
+    -od ${MIPS_DIR} \
+    --output-filename ${EM_INPUT}

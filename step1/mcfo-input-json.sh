@@ -22,5 +22,5 @@ java -jar ${CDS_JAR} \
     --segmented-mips-variant searchable_neurons \
     --segmentation-channel-base 1 \
     --urls-relative-to 1 \
-    -od ${MIPSDIR} \
-    --output-filename ${MCFOINPUT}
+    -od ${MIPS_DIR} \
+    --output-filename ${MCFO_INPUT}
