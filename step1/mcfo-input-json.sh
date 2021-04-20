@@ -9,7 +9,7 @@ BASELIBDIR=/nrs/jacs/jacsData/filestore/system/ColorDepthMIPs/JRC2018_Unisex_20x
 LIBDIR=${BASELIBDIR}/flylight_gen1_mcfo_published
 
 java -jar ${CDS_JAR} \
-    ${JAVA_OPTIONS} \
+    ${JAVA_OPTS} \
     createColorDepthSearchJSONInput \
     --jacsURL ${JACSV2URL} \
     --authorization "Bearer ${JACSTOKEN}" \

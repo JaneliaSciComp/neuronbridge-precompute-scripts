@@ -8,7 +8,7 @@ LIBNAME=flyem_hemibrain_1_1
 LIBDIR=/nrs/jacs/jacsData/filestore/system/ColorDepthMIPs/JRC2018_Unisex_20x_HR/flyem_hemibrain_1_1
 
 java -jar ${CDS_JAR} \
-    ${JAVA_OPTIONS} \
+    ${JAVA_OPTS} \
     createColorDepthSearchJSONInput \
     --jacsURL ${JACSV2URL} \
     --authorization "Bearer ${JACSTOKEN}" \

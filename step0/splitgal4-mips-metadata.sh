@@ -8,7 +8,7 @@ LIBNAME1=flylight_split_gal4_published
 LIBDIR1=/nrs/jacs/jacsData/filestore/system/ColorDepthMIPs/JRC2018_Unisex_20x_HR/flylight_split_gal4_published
 
 java -jar ${CDS_JAR} \
-    ${JAVA_OPTIONS} \
+    ${JAVA_OPTS} \
     groupMIPsByPublishedName \
     --jacsURL ${JACSV2URL} \
     --authorization "Bearer ${JACSTOKEN}" \
