@@ -1,3 +1,5 @@
+#!/bin/bash
+
 # generate mips metadata for the Split Gal4 dataset
 
 source "$(dirname ${BASH_SOURCE[0]})/../global-cdsparams.sh"

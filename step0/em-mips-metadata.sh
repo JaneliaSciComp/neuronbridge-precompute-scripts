@@ -1,3 +1,5 @@
+#!/bin/bash
+
 # generate mips metadata for EM dataset
 
 source "$(dirname ${BASH_SOURCE[0]})/../global-cdsparams.sh"

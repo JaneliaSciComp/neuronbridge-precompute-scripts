@@ -1,3 +1,5 @@
+#!/bin/bash
+
 # generate mips metadata for the MCFO dataset
 
 source "$(dirname ${BASH_SOURCE[0]})/../global-cdsparams.sh"

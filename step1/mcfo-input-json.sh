@@ -1,3 +1,5 @@
+#!/bin/bash
+
 # generate input JSON for MCFO dataset
 
 source "$(dirname ${BASH_SOURCE[0]})/../global-cdsparams.sh"
