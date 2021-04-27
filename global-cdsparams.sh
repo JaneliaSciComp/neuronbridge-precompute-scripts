@@ -29,22 +29,17 @@ export JAVA_OPTS=""
 # values that describe the data for use in later step; the user will fill these in
 
 # data sizes to be filled in by the user
-# TOTAL_MASKS: `grep imageURL ${MIPS_DIR}/${EM_INPUT} | wc`
-export TOTAL_MASKS=44593
-# TOTAL_LIBRARIES: `grep imageURL ${MIPS_DIR}/${MCFO_INPUT} | wc`
-# ? sum with sg4 lines?
+# EM_COUNT: `grep imageURL ${MIPS_DIR}/${EM_INPUT}.json | wc`
+export EM_COUNT=100
+# export EM_COUNT=44593
 
-export TOTAL_LIBRARIES=7391
+# MCFO_COUNT: `grep imageURL ${MIPS_DIR}/${MCFO_INPUT}.json | wc`
+export MCFO_COUNT=30
+# export MCFO_COUNT=175472
 
-
-
-
-# ------------------------------------------------------------
-# job partitioning
-
-# these are chosen empirically
-export MASKS_PER_JOB=44593
-export LIBRARIES_PER_JOB=7391
+# SG4_COUNT: `grep imageURL ${MIPS_DIR}/${SG4_INPUT} | wc`
+export SG4_COUNT=30
+# export SG4_COUNT=2219
 
 
 
@@ -53,15 +48,19 @@ export LIBRARIES_PER_JOB=7391
 
 
 # ------------------------------------------------------------
-# values below here are not expected to change; they relate to filenames, 
-#   directory structure, etc:
+# values below here are not expected to change; in genearl, do not edit!
+# ------------------------------------------------------------
+
+
+# ------------------------------------------------------------
+# directory and filenames:
 
 # JACS service
 JACSV2URL='https://workstation.int.janelia.org/SCSW/JACS2SyncServices/v2'
 
 
 # directories within WORKING_DIR:
-MIPS_DIR="${WORKING_DIR}/mips"
+export MIPS_DIR="${WORKING_DIR}/mips"
 
 # relative subdirectory names
 EM_DIR="em_bodies"
@@ -75,3 +74,18 @@ EM_INPUT="flyem_hemibrain-withDirs"
 SG4_INPUT="all_flylight_split_gal4-withDirs"
 MCFO_INPUT="flylight_gen1_mcfo_published-withDirs"
 
+# search output directory
+CDSMATCHES_SUBDIR=cdsresults.matches
+export CDSMATCHES_RESULTS_DIR=$WORKING_DIR/${CDSMATCHES_SUBDIR}
+
+
+
+# ------------------------------------------------------------
+# processing details
+
+# Color depth search params
+export MASK_THRESHOLD=20
+export DATA_THRESHOLD=20
+export XY_SHIFT=2
+export PIX_FLUCTUATION=1
+export PIX_PCT_MATCH=1
