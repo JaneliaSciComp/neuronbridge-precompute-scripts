@@ -5,7 +5,7 @@
 
 # global parameters first, then common parameters for this step
 source "$(dirname ${BASH_SOURCE[0]})/../global-cdsparams.sh"
-source "$(dirname ${BASH_SOURCE[0]})/step2-cdsparams-em-mcfo.sh"
+source "$(dirname ${BASH_SOURCE[0]})/cdsparams-em-mcfo.sh"
 
 
 function localRun {
