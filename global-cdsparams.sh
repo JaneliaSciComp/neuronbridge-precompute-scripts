@@ -29,26 +29,23 @@ export JAVA_OPTS=""
 # values that describe the data for use in later step; the user will fill these in
 
 # data sizes to be filled in by the user
-# EM_COUNT: `grep imageURL ${MIPS_DIR}/${EM_INPUT}.json | wc`
+# EM_COUNT: `grep imageURL ${MIPS_DIR}/${EM_INPUT}.json | wc` (first value)
 export EM_COUNT=100
 # export EM_COUNT=44593
 
-# MCFO_COUNT: `grep imageURL ${MIPS_DIR}/${MCFO_INPUT}.json | wc`
+# MCFO_COUNT: `grep imageURL ${MIPS_DIR}/${MCFO_INPUT}.json | wc` (first value)
 export MCFO_COUNT=30
 # export MCFO_COUNT=175472
 
-# SG4_COUNT: `grep imageURL ${MIPS_DIR}/${SG4_INPUT} | wc`
+# SG4_COUNT: `grep imageURL ${MIPS_DIR}/${SG4_INPUT} | wc` (first value)
 export SG4_COUNT=30
 # export SG4_COUNT=2219
 
 
 
 
-
-
-
 # ------------------------------------------------------------
-# values below here are not expected to change; in genearl, do not edit!
+# values below here are not expected to change; in general, do not edit!
 # ------------------------------------------------------------
 
 
@@ -78,6 +75,10 @@ MCFO_INPUT="flylight_gen1_mcfo_published-withDirs"
 CDSMATCHES_SUBDIR=cdsresults.matches
 export CDSMATCHES_RESULTS_DIR=$WORKING_DIR/${CDSMATCHES_SUBDIR}
 
+# gradient score directory
+CDSGA_SUBDIR=cdsresults.ga
+export CDGAS_RESULTS_DIR=${WORKING_DIR}/${CDSGA_SUBDIR}
+
 
 
 # ------------------------------------------------------------
@@ -89,3 +90,12 @@ export DATA_THRESHOLD=20
 export XY_SHIFT=2
 export PIX_FLUCTUATION=1
 export PIX_PCT_MATCH=1
+
+# this specifies the number of lines to select for gradient scoring.
+export TOP_RESULTS=300
+export SAMPLES_PER_LINE=0
+
+# gradients and ZGAP locations
+export CDGA_GRADIENTS_LOCATION=${GA_PRECOMPUTED_FILES_LOCATION}/SSnew_05202020_gradient.zip
+export CDGA_ZGAP_LOCATION=${GA_PRECOMPUTED_FILES_LOCATION}/SSnew_05202020_RGB20px.zip
+export CDGA_ZGAP_SUFFIX=_RGB20px
