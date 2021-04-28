@@ -54,12 +54,24 @@ Setup:
     + CDS_JAR_VERSION
 - edit global parameters file, optional/as needed:
     + JAVA runtime variables and options
+    + (?) input file names ([EM|SG4|MCFO]_INPUT)
 
 General notes:
 - adjust Java paths and parameters in the global parameters file
     + note you can enable/disable debugging here, for example
 - the datasets vary quite a bit in size; when you run the same command over the EM or any of the LM datasets, the running time and disk space of the output may vary by an order of magnitude
     + generally Split Gal4 is by far the smallest, with EM much larger, and MCFO the largest
+
+git for recording history:
+
+The intention is that the user will edit various cdparams files as the workflow is run, but that _no value will be edited after it is used._ If so, it needs to be split into a new cdparams files (like the others)! Likewise, if any auxiliary scripts need to be run in order to fix or adjust things, they should appear as run somewhere in the directory structure (with notes, please). Then, once the workflow is done, the whole repo will contain the history of how it was run. To that end:
+
+- at the outset, after cloning, create and checkout a branch of colormipsearch-scripts with a good descriptive name for this iteration
+- do not edit anything (scripts or parameters) after it's been used
+- commit all changes and all extra scripts etc. that were needed
+- when done, commit and push the branch
+- switch back to main
+- as needed, merge improvements back to main from the branch
 
 
 # Running the workflow
@@ -144,20 +156,113 @@ cluster |  |  |  | can be used for parallel jobs if time critical and budget ava
 
 ## Step 2: Compute color depth matches
 
-**Run:**
+### Count data input
 
+Determine the number of masks and libraries found in step 1. Edit `global-cdsparams.sh` with the results of these commands:
+- `source global-cdsparams.sh` (to populate the variables used below)
+- edit `EM_COUNT` to `grep imageURL ${MIPSDIR}/${EMINPUT}.json | wc` (first value)
+- edit `MCFO_COUNT` to `grep imageURL ${MIPSDIR}/${MCFOINPUT}.json | wc` (first value)
+- edit `SG4_COUNT`: `grep imageURL ${MIPS_DIR}/${SG4_INPUT}.json | wc` (first value)
+
+You should not need to edit any of the job partitioning numbers. They are in `step2-cdsparams-em-sg4.sh` and `step-cdparams-em-mcfo.sh` if you do.
+
+### Perform searches
+
+This step is done in parallel. Normally it's done on SciComp servers, but if there is budget and a need for speed, it can be run on the cluster. There's code in place for that, but it hasn't been used or tested much. In particular, billing control seems to be absent.
+
+The mouse1 and mouse2 servers are appropriate for this step, as they have a lot of CPUs and adequate memory. The work is batched into sequential jobs, and each job runs multiple work threads.
+
+**Run:**
+- on mouse1/2
+- from anywhere, any order, etc.
+- `step2/submit-em-sg4.sh`
+- `step2/submit-em-mcfo.sh`
 
 **Expected output:**
 - files created:
-- 
+```
+    working/cdsresults.matches
+        for each mask/library M/L pair:
+            M-vs-L/ and L-vs-M/ directories, containing json results files
+            log-M-L/ directory with search logs (M and L abbreviated here)
+            mask-M-inputs-L-cdsParameters.json parameter file
+```
 
 
+## Step 3: Calculate gradient score for the EM to LM color depth matches
+
+### Count results files
+
+Determine the number of search results files found in step 2. Edit `step3/cdsparams-em-sg4.sh` with the results of these commands:
+- `source global-cdsparams.sh`
+- count number of results files: `ls ${CDSMATCHES_RESULTS_DIR}/${SG4_INPUT}-vs-${EM_INPUT} | wc`
+- for running on mouse[12], leave `FILES_PER_JOB=200`
+- set `TOTAL_FILES` to the smallest multiple of `FILES_PER_JOB` that is greater or equal to the number of results files found above
+    + eg, if # results = 1234 and `FILES_PER_JOB` is 200, choose 1400
+
+Repeat for MCFO.
+
+### Perform gradient scoring 
+
+As with step 2, this step is done in parallel, usually run on SciComp servers. All the above comments apply.
+
+**Run:**
+- on mouse1/2
+- from anywhere, any order, etc.
+- `step3/submit-em-sg4.sh`
+- `step3/submit-em-mcfo.sh`
+
+**Expected output:**
+- files created:
+```
+    working/cdsresults.ga
+        for each mask/library M/L pair:
+            M-vs-L/ directory, containing json results files
+            log-M-L/ directory with search logs (M and L abbreviated again)
+```
 
 
+## Step 4: Compute reverse gradient scores
+
+This step basically reverses step 3 (masks <--> libraries). Note:
+
+- it shares the job partitioning from step 3; no user parameters to update
+    + although you can if you need to; copy the appropriate variables from the parameters file and update them
+- needs to be run on high memory machine
+
+### Perform reverse gradient scroing
+
+**Run:**
+- on imagecatcher
+- from anywhere, any order, etc.
+- `step4/submit-em-sg4.sh`
+- `step4/submit-em-mcfo.sh`
+
+**Expected output:**
+- files created:
+```
+    working/cdsresults.ga
+        for each mask/library M/L pair:
+            L-vs-</ directory, containing json results files
+            log-L-M/ directory with search logs
+```
 
 
+## Step 5: Merge results
+
+**Run:**
+- on any computer
+- from anywhere, any order, etc.
+- `step5/merge-lm.sh`
+- `step5/merge-em.sh`
 
 
+## Step 6: Normalize
+
+This step seems not to be needed any more.
+
+
+## Step 7: AWS upload
 
 
 
