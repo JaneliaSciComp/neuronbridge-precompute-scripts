@@ -79,6 +79,9 @@ export CDSMATCHES_RESULTS_DIR=$WORKING_DIR/${CDSMATCHES_SUBDIR}
 CDSGA_SUBDIR=cdsresults.ga
 export CDGAS_RESULTS_DIR=${WORKING_DIR}/${CDSGA_SUBDIR}
 
+# final results directory
+CDS_FINAL_SUBDIR=cdsresults.final
+export CDS_FINAL_DIR=${WORKING_DIR}/${CDS_FINAL_SUBDIR}
 
 
 # ------------------------------------------------------------
