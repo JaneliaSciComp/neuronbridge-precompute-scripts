@@ -51,13 +51,6 @@ export MIPS_CACHE_SIZE=100000
 export MIPS_CACHE_EXPIRATION=60
 
 
-
-
-
-
-
-
-
 # ------------------------------
 # job control parameters
 
