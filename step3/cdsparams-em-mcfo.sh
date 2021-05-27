@@ -38,6 +38,20 @@ export JOB_LOGPREFIX="${CDGAS_RESULTS_DIR}/logs-em-mcfo/"
 
 
 # ------------------------------
+# job partitioning
+
+# the selection of the number of masks or libraries per job is empirical based on the size of the libraries and/or masks
+export MASKS_PER_JOB=50
+export LIBRARIES_PER_JOB=10
+export PROCESSING_PARTITION_SIZE=100
+
+# round up the total numbers because the operations are integer divisions
+export JOBS_FOR_LIBRARIES=$((MCFO_COUNT / LIBRARIES_PER_JOB))
+export JOBS_FOR_MASKS=$((EM_COUNT / MASKS_PER_JOB))
+export TOTAL_JOBS=$((JOBS_FOR_LIBRARIES * JOBS_FOR_MASKS))
+
+
+# ------------------------------
 # computer-related numbers for mouse1/2
 export CORES_RESOURCE=20
 export CPU_RESERVE=1
