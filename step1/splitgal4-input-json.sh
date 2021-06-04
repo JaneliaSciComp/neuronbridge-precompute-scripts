@@ -7,8 +7,8 @@ source "$(dirname ${BASH_SOURCE[0]})/../global-cdsparams.sh"
 LIBNAME=flylight_splitgal4_drivers
 LIBDIR=/nrs/jacs/jacsData/filestore/system/ColorDepthMIPs/JRC2018_Unisex_20x_HR/flylight_split_gal4_published
 
-java -jar ${CDS_JAR} \
-    ${JAVA_OPTS} \
+java ${JAVA_OPTS} \
+    -jar ${CDS_JAR} \
     createColorDepthSearchJSONInput \
     --jacsURL ${JACSV2URL} \
     --authorization "Bearer ${JACSTOKEN}" \

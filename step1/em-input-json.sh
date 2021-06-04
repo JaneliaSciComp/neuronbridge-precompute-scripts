@@ -7,8 +7,8 @@ source "$(dirname ${BASH_SOURCE[0]})/../global-cdsparams.sh"
 LIBNAME=flyem_hemibrain_1_1
 LIBDIR=/nrs/jacs/jacsData/filestore/system/ColorDepthMIPs/JRC2018_Unisex_20x_HR/flyem_hemibrain_1_1
 
-java -jar ${CDS_JAR} \
-    ${JAVA_OPTS} \
+java ${JAVA_OPTS} \
+    -jar ${CDS_JAR} \
     createColorDepthSearchJSONInput \
     --jacsURL ${JACSV2URL} \
     --authorization "Bearer ${JACSTOKEN}" \

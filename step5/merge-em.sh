@@ -8,8 +8,8 @@ source "$(dirname ${BASH_SOURCE[0]})/../global-cdsparams.sh"
 SG4_DIR="${CDGAS_RESULTS_DIR}/${EM_INPUT}-vs-${SG4_INPUT}"
 MCFO_DIR="${CDGAS_RESULTS_DIR}/${EM_INPUT}-vs-${MCFO_INPUT}"
 
-java -jar ${CDS_JAR} \
-    ${JAVA_OPTS} \
+java ${JAVA_OPTS} \
+    -jar ${CDS_JAR} \
     mergeResults \
     -cleanup \
     -rd ${SG4_DIR} ${MCFO_DIR} \

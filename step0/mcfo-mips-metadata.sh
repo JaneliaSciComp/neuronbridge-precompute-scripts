@@ -7,8 +7,8 @@ source "$(dirname ${BASH_SOURCE[0]})/../global-cdsparams.sh"
 LIBNAME=flylight_gen1_mcfo_published
 LIBDIR=/nrs/jacs/jacsData/filestore/system/ColorDepthMIPs/JRC2018_Unisex_20x_HR/flylight_gen1_mcfo_published
 
-java -jar ${CDS_JAR} \
-    ${JAVA_OPTS} \
+java ${JAVA_OPTS} \
+    -jar ${CDS_JAR} \
     groupMIPsByPublishedName \
     --jacsURL ${JACSV2URL} \
     --authorization "Bearer ${JACSTOKEN}" \
