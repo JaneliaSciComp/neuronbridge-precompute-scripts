@@ -5,7 +5,7 @@
 
 # locations
 # the working directory that will hold *everything*:
-export WORKING_DIR=/nrs/scicompsoft/olbrisd/cdstests/working
+export WORKING_DIR=/nrs/neuronbridge/v2.2/
 
 # code locations
 CDS_JAR_VERSION="2.7.0"
@@ -30,16 +30,13 @@ export JAVA_OPTS=""
 
 # data sizes to be filled in by the user
 # EM_COUNT: `grep imageURL ${MIPS_DIR}/${EM_INPUT}.json | wc` (first value)
-export EM_COUNT=100
-# export EM_COUNT=44593
+export EM_COUNT=71850
 
 # MCFO_COUNT: `grep imageURL ${MIPS_DIR}/${MCFO_INPUT}.json | wc` (first value)
-export MCFO_COUNT=30
-# export MCFO_COUNT=175472
+export MCFO_COUNT=175472
 
 # SG4_COUNT: `grep imageURL ${MIPS_DIR}/${SG4_INPUT} | wc` (first value)
-export SG4_COUNT=30
-# export SG4_COUNT=2219
+export SG4_COUNT=2219
 
 
 
@@ -67,9 +64,9 @@ MCFO_DIR="gen1_mcfo_lines"
 # filenames
 
 # input json files (.json suffix will be added)
-EM_INPUT="flyem_hemibrain-withDirs"
-SG4_INPUT="all_flylight_split_gal4-withDirs"
-MCFO_INPUT="flylight_gen1_mcfo_published-withDirs"
+EM_INPUT="hemibrain1.2.1"
+SG4_INPUT="split_gal4"
+MCFO_INPUT="mcfo"
 
 # search output directory
 CDSMATCHES_SUBDIR=cdsresults.matches

@@ -4,7 +4,7 @@
 
 source "$(dirname ${BASH_SOURCE[0]})/../global-cdsparams.sh"
 
-LIBNAME=flyem_hemibrain_1_1
+LIBNAME=flyem_hemibrain_1_2_1
 
 java ${JAVA_OPTS} \
     -jar ${CDS_JAR} \

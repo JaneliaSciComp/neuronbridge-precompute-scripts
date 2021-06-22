@@ -4,8 +4,8 @@
 
 source "$(dirname ${BASH_SOURCE[0]})/../global-cdsparams.sh"
 
-LIBNAME=flyem_hemibrain_1_1
-LIBDIR=/nrs/jacs/jacsData/filestore/system/ColorDepthMIPs/JRC2018_Unisex_20x_HR/flyem_hemibrain_1_1
+LIBNAME=flyem_hemibrain_1_2_1
+LIBDIR=/nrs/jacs/jacsData/filestore/system/ColorDepthMIPs/JRC2018_Unisex_20x_HR/flyem_hemibrain_1_2_1
 
 java ${JAVA_OPTS} \
     -jar ${CDS_JAR} \

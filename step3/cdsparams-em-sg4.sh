@@ -9,13 +9,13 @@
 # TOTAL_FILES is the least number > the number of files containing matches by EM that is divisible by FILES_PER_JOB
 # the reason for that is that in bash TOTAL_FILES/FILES_PER_JOB is an integer division and if it does not divide exactly
 # we may not process all the files
-# so to calculate it `ls ${CDSMATCHES_RESULTS_DIR}/${SG4_INPUT}-vs-${EM_INPUT} | wc` then take the least number > the value
+# so to calculate it `ls ${CDSMATCHES_RESULTS_DIR}/${EM_INPUT}-vs-${SG4_INPUT} | wc` then take the least number > the value
 # that is divisible by the selected value for FILES_PER_JOB
 # the value depends on the CPU and memory resources available on the machine. If running on the grid requesting 20 cores
-export TOTAL_FILES=50
+export TOTAL_FILES=72000
 # for split gal4 drivers we can use up to 200 files per job - for MCFO we cannot go higher than 100 since the number of MCFOs
 # is much larger
-export FILES_PER_JOB=50
+export FILES_PER_JOB=200
 
 export START_FILE_INDEX=0
 export TOTAL_JOBS=$(((TOTAL_FILES - START_FILE_INDEX) / FILES_PER_JOB))
@@ -35,20 +35,6 @@ export CDGA_OUTPUT_DIR=${CDGAS_RESULTS_DIR}/${RESULTS_SUBDIR_FOR_MASKS}
 
 # log file 
 export JOB_LOGPREFIX="${CDGAS_RESULTS_DIR}/logs-em-sg4/"
-
-
-# ------------------------------
-# job partitioning
-
-# the selection of the number of masks or libraries per job is empirical based on the size of the libraries and/or masks
-export MASKS_PER_JOB=50
-export LIBRARIES_PER_JOB=10
-export PROCESSING_PARTITION_SIZE=500
-
-# round up the total numbers because the operations are integer divisions
-export JOBS_FOR_LIBRARIES=$((SG4_COUNT / LIBRARIES_PER_JOB))
-export JOBS_FOR_MASKS=$((EM_COUNT / MASKS_PER_JOB))
-export TOTAL_JOBS=$((JOBS_FOR_LIBRARIES * JOBS_FOR_MASKS))
 
 
 # ------------------------------
