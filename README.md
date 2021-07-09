@@ -49,6 +49,10 @@ Prerequisites:
 - cluster access optional
 
 Setup:
+- determine the data version of the release
+    + this is not strictly necessary until step 7, but it makes sense to use it in directory names etc., so better to do it now
+    + if there are any changes to the json output that will break the current website, increment the major version
+    + otherwise, increment the minor version or patch level as appropriate
 - create your working directory and clone two repos into it
 - build the colormipsearch project
     + jar will end up in the target/ subdirectory
@@ -340,6 +344,35 @@ This step seems not to be needed any more.
 
 
 ## Step 7: AWS upload
+
+This step uploads the data to the AWS cloud. There are several goups of files to be uploaded, and they need not be done all at the same time. The `util/upload.sh` script has all the commands, and they can be commented out/in as needed to do whichever part of the upload you want.
+
+**Preparation:**
+- determine the data version of the release if you haven't already; see notes in "Setup, prerequisites, general notes" section at top
+- create/edit `working/DATA_VERSION` with the new verison
+- create/edit `working/DATA_NOTES.md` with details of what's included and what's changed
+- `working/publishedNames.txt`: create this file with the following code fragment:
+``` cd working
+    find mips \
+        -type f \
+        -name "*.json" \
+        -printf "%f\n" | sed s/.json// | sort -u > publishedNames.txt
+```
+- create/edit `working/paths.json` file
+    + make sure the buckets are right for the site you're uploading data for
+    + consider not updating the "precomputedDataRootPath" immediately; this controls which data version of those available is used by the website, and you probably want to do this last and separately, after you're sure all other uploads are done
+- edit `util/upload.sh` 
+    + set correct upload bucket for the website you're uploading data for
+    + set version folder name based on data version
+
+**Run:**
+- on any computer that has AWS command-line client installed
+- user must have credentials for our account, configured in the client
+- in general, the command to upload is `util/upload.sh`
+    + by default, for safety, the script will only print the commands it will execute
+    + edit to comment in/out the two `EXEC_CMD` values; "echo" is the command preview; empty = do it for real
+    + usually you will _not_ want to upload the `paths.json` file until you are sure the rest of the upload is correct
+
 
 
 
