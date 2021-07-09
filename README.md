@@ -49,6 +49,10 @@ Prerequisites:
 - cluster access optional
 
 Setup:
+- determine the data version of the release
+    + this is not strictly necessary until step 7, but it makes sense to use it in directory names etc., so better to do it now
+    + if there are any changes to the json output that will break the current website, increment the major version
+    + otherwise, increment the minor version or patch level as appropriate
 - create your working directory and clone two repos into it
 - build the colormipsearch project
     + jar will end up in the target/ subdirectory
@@ -130,9 +134,9 @@ Step 1: Prepare LM and EM JSON input | `createColorDepthSearchJSONInput` |  |  |
 Step 1': Replace image URLs (?) | `replaceAttributes` | | | | minutes (?)
 Step 2: Compute color depth matches | `searchFromJSON` |  | :white_check_mark: | mouse1, mouse2  | several hours
 Step 3: Calculate gradient score | `gradientScore` | 180G+  | :white_check_mark: | mouse1,2 | days to a week          
-Step 4: Update the gradient score | `gradientScoresFromMatchedResults` | 480G | | imagecatcher | hours            
-Step 5: Merge flyem results | `mergeResults` | | | | minutes          
-Step 6: Normalize and rank results | `normalizeScores` | | | | minutes       
+Step 4: Update the gradient score | `gradientScoresFromMatchedResults` | 480G | | imagecatcher | hours to days            
+Step 5: Merge flyem results | `mergeResults` | | | | ~30 minutes          
+Step 6: Normalize and rank results (not needed anymore?) | `normalizeScores` | | | | minutes       
 Step 7: Upload to AWS S3 | n/a | | | | hour
 
 ## Computational resources
@@ -158,10 +162,11 @@ cluster |  |  |  | can be used for parallel jobs if time critical and budget ava
     + `step0/mcfo-mips-metadata.sh`
 
 **Expected output:**
-- expected numbers as of April 2021
+- expected numbers as of v2.1.1 (late 2020)
 - files and directories created:
 ```
     working/mips
+        ~2G total
         /em_bodies
             ~30k json files
         /split_gal4_lines
@@ -184,20 +189,15 @@ cluster |  |  |  | can be used for parallel jobs if time critical and budget ava
     + `step1/mcfo-input-json.sh`
 
 **Expected output:**
-- files created:
+- files created (v2.2 names):
 ```
     working/mips
-        flyem_hemibrain-withDirs.json
-        all_flylight_split_gal4-withDirs.json
-        flylight_gen1_mcfo_published-withDirs.json
+        hemibrain1.2.1.json
+        mcfo.json
+        split_gal4.json
 ```
-- filenames may vary; they are specified in `global-cdsparams.sh` as `EM_INPUT` etc.
+- filenames are specified in `global-cdsparams.sh` as `EM_INPUT` etc.
 - each json file is mid-sized, ~5-500Mb
-
-
-## maybe image URL update step?
-
-Not sure if this step needs to be done at present. Or maybe this is what I am talking about below, that will get fixed if we just rerun step 1?
 
 
 ## Step 1.5: Rob uploads images to S3
@@ -206,17 +206,11 @@ Rob Svirskas will upload images to S3 and post their URLs to JACS.
 
 - in /groups/scicompsoft/informatics/data/release_libraries, create subdir with data version name
 - copy json files from step 1 to that new dir and let Rob know
-
-Notes:
-- the right order to do things is not clear to me yet
 - "imageURL" and "thumbnailURL" attributes will be empty before Rob gets them into JACS
-- but we need those to be populated later, in both the MIPs metadata files and the input files!
-- so I suspect the right order is:
-    + do step 1 ("imageURL" empty)
-    + let Rob do uploads
-    + do step 0 and step 1 (again) ("imageURL" should be picked up from db)
+- so we'll have to repeat step 0 and 1 so those fields will be populated
+    + in fact, since they don't depend on each other, could do step 1, have Rob do uploads, then repeat 1 and do 0 for the first time
+    + --> still working this out
 - once populated, those fields ought to be carried along to the end results json files
-    + I am *fairly* sure of that; I don't believe any subsequent step goes back to the db for those values and fills them in later
 
 
 ## Step 2: Compute color depth matches
@@ -237,6 +231,8 @@ This step is done in parallel. Normally it's done on SciComp servers, but if the
 
 The mouse1 and mouse2 servers are appropriate for this step, as they have a lot of CPUs and adequate memory. The work is batched into sequential jobs, and each job runs multiple work threads.
 
+In this first step, the masks = EM data, and the libraries = LM data.
+
 **Run:**
 - on mouse1/2
 - from anywhere, any order, etc.
@@ -244,13 +240,22 @@ The mouse1 and mouse2 servers are appropriate for this step, as they have a lot 
 - `step2/submit-em-mcfo.sh`
 
 **Expected output:**
-- files created:
+- files created (v2.2 naming scheme):
 ```
     working/cdsresults.matches
         for each mask/library M/L pair:
             M-vs-L/ and L-vs-M/ directories, containing json results files
             log-M-L/ directory with search logs (M and L abbreviated here)
             mask-M-inputs-L-cdsParameters.json parameter file
+        for v2.2, that is:
+            hemibrain1.2.1-vs-mcfo/ 
+            hemibrain1.2.1-vs-split_gal4/
+            mcfo-vs-hemibrain1.2.1/
+            split_gal4-vs-hemibrain1.2.1/
+            logs-em-mcfo/  
+            logs-em-sg4/
+            masks-hemibrain1-inputs-mcfo-cdsParameters.json        
+            masks-hemibrain1-inputs-split_gal4-cdsParameters.json
 ```
 
 
@@ -321,6 +326,17 @@ This step basically reverses step 3 (masks <--> libraries). Note:
 - `step5/merge-lm.sh`
 - `step5/merge-em.sh`
 
+**Expected output:**
+- files created:
+```
+    working/cdsresults.final
+        ~ 300G total for v2.2
+        flyem-vs-flylight/
+            ~45k json results files
+        flylight-vs-flyem/
+            ~45k json results files
+```
+
 
 ## Step 6: Normalize
 
@@ -328,6 +344,35 @@ This step seems not to be needed any more.
 
 
 ## Step 7: AWS upload
+
+This step uploads the data to the AWS cloud. There are several goups of files to be uploaded, and they need not be done all at the same time. The `util/upload.sh` script has all the commands, and they can be commented out/in as needed to do whichever part of the upload you want.
+
+**Preparation:**
+- determine the data version of the release if you haven't already; see notes in "Setup, prerequisites, general notes" section at top
+- create/edit `working/DATA_VERSION` with the new verison
+- create/edit `working/DATA_NOTES.md` with details of what's included and what's changed
+- `working/publishedNames.txt`: create this file with the following code fragment:
+``` cd working
+    find mips \
+        -type f \
+        -name "*.json" \
+        -printf "%f\n" | sed s/.json// | sort -u > publishedNames.txt
+```
+- create/edit `working/paths.json` file
+    + make sure the buckets are right for the site you're uploading data for
+    + consider not updating the "precomputedDataRootPath" immediately; this controls which data version of those available is used by the website, and you probably want to do this last and separately, after you're sure all other uploads are done
+- edit `util/upload.sh` 
+    + set correct upload bucket for the website you're uploading data for
+    + set version folder name based on data version
+
+**Run:**
+- on any computer that has AWS command-line client installed
+- user must have credentials for our account, configured in the client
+- in general, the command to upload is `util/upload.sh`
+    + by default, for safety, the script will only print the commands it will execute
+    + edit to comment in/out the two `EXEC_CMD` values; "echo" is the command preview; empty = do it for real
+    + usually you will _not_ want to upload the `paths.json` file until you are sure the rest of the upload is correct
+
 
 
 
