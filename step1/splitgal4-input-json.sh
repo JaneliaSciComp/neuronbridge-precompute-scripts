@@ -13,7 +13,6 @@ java ${JAVA_OPTS} \
     --jacsURL ${JACSV2URL} \
     --authorization "Bearer ${JACSTOKEN}" \
     -l ${LIBNAME} \
-    --excluded-libraries flylight_split_gal4_published \
     --librariesVariants \
     ${LIBNAME}:searchable_neurons:${LIBDIR}/segmentation \
     ${LIBNAME}:gradient:${LIBDIR}/grad \
