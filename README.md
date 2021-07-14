@@ -129,15 +129,15 @@ The intention is that the user will edit various cdparams files as the workflow 
 
 Step | Command | Memory | Parallel? | Computer | Running time
 ---- | ------- | ------ | --------- | -------- | ------------ 
-Step 0: Generate MIPs metadata | `groupMIPsByPublishedName` |  |  |  |  several minutes
+Step 0: Generate MIPs metadata | `groupMIPsByPublishedName` |  |  |  |  < 1/2 hour
 Step 1: Prepare LM and EM JSON input | `createColorDepthSearchJSONInput` |  |  |  | < 1 hour
-Step 1': Replace image URLs (?) | `replaceAttributes` | | | | minutes (?)
-Step 2: Compute color depth matches | `searchFromJSON` |  | :white_check_mark: | mouse1, mouse2  | several hours
-Step 3: Calculate gradient score | `gradientScore` | 180G+  | :white_check_mark: | mouse1,2 | days to a week          
+Step 1': Replace image URLs (no longer needed?) | `replaceAttributes` | | | | 
+Step 2: Compute color depth matches | `searchFromJSON` |  | :white_check_mark: | mouse1, mouse2  | few hours (SG4) to few days (MCFO)
+Step 3: Calculate gradient score | `gradientScore` | 180G+  | :white_check_mark: | mouse1,2 | few days 
 Step 4: Update the gradient score | `gradientScoresFromMatchedResults` | 480G | | imagecatcher | hours to days            
-Step 5: Merge flyem results | `mergeResults` | | | | ~30 minutes          
+Step 5: Merge flyem results | `mergeResults` | | | | ~30-40 minutes          
 Step 6: Normalize and rank results (not needed anymore?) | `normalizeScores` | | | | minutes       
-Step 7: Upload to AWS S3 | n/a | | | | hour
+Step 7: Upload to AWS S3 | n/a | | | | ~45 minutes
 
 ## Computational resources
 
@@ -163,6 +163,7 @@ cluster |  |  |  | can be used for parallel jobs if time critical and budget ava
 
 **Expected output:**
 - expected numbers as of v2.1.1 (late 2020)
+- running time: ~20 minutes for all three
 - files and directories created:
 ```
     working/mips
@@ -189,6 +190,7 @@ cluster |  |  |  | can be used for parallel jobs if time critical and budget ava
     + `step1/mcfo-input-json.sh`
 
 **Expected output:**
+- running time: ~50 minutes for all three
 - files created (v2.2 names):
 ```
     working/mips
@@ -217,7 +219,7 @@ Rob Svirskas will upload images to S3 and post their URLs to JACS.
 
 ### Count data input
 
-Determine the number of masks and libraries found in step 1. Edit `global-cdsparams.sh` with the results of these commands:
+Determine the number of MIPs found in step 1. Edit `global-cdsparams.sh` with the results of these commands:
 - `source global-cdsparams.sh` (to populate the variables used below)
 - edit `EM_COUNT` to `grep imageURL ${MIPSDIR}/${EMINPUT}.json | wc` (first value)
 - edit `MCFO_COUNT` to `grep imageURL ${MIPSDIR}/${MCFOINPUT}.json | wc` (first value)
@@ -231,7 +233,7 @@ This step is done in parallel. Normally it's done on SciComp servers, but if the
 
 The mouse1 and mouse2 servers are appropriate for this step, as they have a lot of CPUs and adequate memory. The work is batched into sequential jobs, and each job runs multiple work threads.
 
-In this first step, the masks = EM data, and the libraries = LM data.
+In this step, in the parameter file, the masks = EM data, and the libraries = LM data, though output is produced for both directions.
 
 **Run:**
 - on mouse1/2
@@ -240,6 +242,9 @@ In this first step, the masks = EM data, and the libraries = LM data.
 - `step2/submit-em-mcfo.sh`
 
 **Expected output:**
+- running time (v2.2):
+    + split gal4: ~2 hours
+    + MCFO: ~75 hours (3+ days)
 - files created (v2.2 naming scheme):
 ```
     working/cdsresults.matches
@@ -248,10 +253,15 @@ In this first step, the masks = EM data, and the libraries = LM data.
             log-M-L/ directory with search logs (M and L abbreviated here)
             mask-M-inputs-L-cdsParameters.json parameter file
         for v2.2, that is:
+            ~5T total
             hemibrain1.2.1-vs-mcfo/ 
+                ~45k json files
             hemibrain1.2.1-vs-split_gal4/
+                ~45k json files
             mcfo-vs-hemibrain1.2.1/
+                ~80k json files
             split_gal4-vs-hemibrain1.2.1/
+                ~2k json files
             logs-em-mcfo/  
             logs-em-sg4/
             masks-hemibrain1-inputs-mcfo-cdsParameters.json        
@@ -265,7 +275,7 @@ In this first step, the masks = EM data, and the libraries = LM data.
 
 Determine the number of search results files found in step 2. Edit `step3/cdsparams-em-sg4.sh` with the results of these commands:
 - `source global-cdsparams.sh`
-- count number of results files: `ls ${CDSMATCHES_RESULTS_DIR}/${SG4_INPUT}-vs-${EM_INPUT} | wc`
+- count number of results files: `ls ${CDSMATCHES_RESULTS_DIR}/${EM_INPUT}-vs-${SG4_INPUT} | wc`
 - for running on mouse[12], leave `FILES_PER_JOB=200`
 - set `TOTAL_FILES` to the smallest multiple of `FILES_PER_JOB` that is greater or equal to the number of results files found above
     + eg, if # results = 1234 and `FILES_PER_JOB` is 200, choose 1400
@@ -274,7 +284,9 @@ Repeat for MCFO.
 
 ### Perform gradient scoring 
 
-As with step 2, this step is done in parallel, usually run on SciComp servers. All the above comments apply.
+As with step 2, this step is done in parallel, usually run on SciComp servers. Almost all of the step 2 comments above apply.
+
+For this step, masks = EM, libraries = LM. Output is only produced for this combination.
 
 **Run:**
 - on mouse1/2
@@ -283,12 +295,20 @@ As with step 2, this step is done in parallel, usually run on SciComp servers. A
 - `step3/submit-em-mcfo.sh`
 
 **Expected output:**
+- running time (v2.2):
+    + split gal4: 
+    + MCFO: 2 days? (jobs got interrupted, didn't get a good timing)
 - files created:
 ```
     working/cdsresults.ga
         for each mask/library M/L pair:
             M-vs-L/ directory, containing json results files
             log-M-L/ directory with search logs (M and L abbreviated again)
+        for v2.2, that is:
+            hemibrain1.2.1-vs-mcfo/ 
+            hemibrain1.2.1-vs-split_gal4/
+            logs-em-mcfo/  
+            logs-em-sg4/
 ```
 
 
@@ -297,8 +317,10 @@ As with step 2, this step is done in parallel, usually run on SciComp servers. A
 This step basically reverses step 3 (masks <--> libraries). Note:
 
 - it shares the job partitioning from step 3; no user parameters to update
-    + although you can if you need to; copy the appropriate variables from the parameters file and update them
-- needs to be run on high memory machine
+    + although you can if you need to; copy the appropriate variables from the step 3 parameters file into the step 4 file and change them there
+- needs to be run on high memory machine; the computer-related parameters _are_ different for step 4
+- in the parameter file, it's still masks = EM, libraries = LM, even though we're really doing the reverse
+    
 
 ### Perform reverse gradient scroing
 
@@ -309,12 +331,20 @@ This step basically reverses step 3 (masks <--> libraries). Note:
 - `step4/submit-em-mcfo.sh`
 
 **Expected output:**
+- running time:
+    + split gal4:
+    + MCFO: 
 - files created:
 ```
     working/cdsresults.ga
         for each mask/library M/L pair:
-            L-vs-</ directory, containing json results files
+            L-vs-M/ directory, containing json results files
             log-L-M/ directory with search logs
+        for v.2:
+            mcfo-vs-hemibrain1.2.1/
+            split_gal4-vs-hemibrain1.2.1/
+            logs-mcfo-em/     
+            logs-sg4-em/  
 ```
 
 
@@ -327,6 +357,7 @@ This step basically reverses step 3 (masks <--> libraries). Note:
 - `step5/merge-em.sh`
 
 **Expected output:**
+- running time: ~35 minutes for both
 - files created:
 ```
     working/cdsresults.final
@@ -345,10 +376,14 @@ This step seems not to be needed any more.
 
 ## Step 7: AWS upload
 
-This step uploads the data to the AWS cloud. There are several goups of files to be uploaded, and they need not be done all at the same time. The `util/upload.sh` script has all the commands, and they can be commented out/in as needed to do whichever part of the upload you want.
+This step uploads the data to the AWS cloud. There are several goups of files to be uploaded, and they need not be done all at the same time. The `util/upload.sh` script has all the commands, and they can be commented out/in as needed to do whichever part of the upload you want. 
 
 **Preparation:**
 - determine the data version of the release if you haven't already; see notes in "Setup, prerequisites, general notes" section at top
+- edit `util/upload.sh` 
+    + set correct upload bucket for the website you're uploading data for
+    + set version folder name based on data version
+    + at this point you can begin uploading MIPs and results
 - create/edit `working/DATA_VERSION` with the new verison
 - create/edit `working/DATA_NOTES.md` with details of what's included and what's changed
 - `working/publishedNames.txt`: create this file with the following code fragment:
@@ -361,9 +396,6 @@ This step uploads the data to the AWS cloud. There are several goups of files to
 - create/edit `working/paths.json` file
     + make sure the buckets are right for the site you're uploading data for
     + consider not updating the "precomputedDataRootPath" immediately; this controls which data version of those available is used by the website, and you probably want to do this last and separately, after you're sure all other uploads are done
-- edit `util/upload.sh` 
-    + set correct upload bucket for the website you're uploading data for
-    + set version folder name based on data version
 
 **Run:**
 - on any computer that has AWS command-line client installed
@@ -372,7 +404,10 @@ This step uploads the data to the AWS cloud. There are several goups of files to
     + by default, for safety, the script will only print the commands it will execute
     + edit to comment in/out the two `EXEC_CMD` values; "echo" is the command preview; empty = do it for real
     + usually you will _not_ want to upload the `paths.json` file until you are sure the rest of the upload is correct
-
+- running time:
+    + upload mips: ~10 minutes
+    + upload results: ~30 minutes
+    + upload misc text files: <1 minute
 
 
 
