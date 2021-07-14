@@ -18,7 +18,7 @@ export JOB_LOGPREFIX="${CDSMATCHES_RESULTS_DIR}/logs-em-sg4/"
 
 # ------------------------------
 # computer-related numbers for mouse1/2
-export CORES_RESOURCE=35
+export CORES_RESOURCE=20
 export CPU_RESERVE=1
 
 # MEM_RESOURCE value is the memory in GB available on the host on which this runs
@@ -35,7 +35,7 @@ export MIPS_CACHE_EXPIRATION=60
 
 # the selection of the number of masks or libraries per job is empirical based on the size of the libraries and/or masks
 export MASKS_PER_JOB=71850
-export LIBRARIES_PER_JOB=2219
+export LIBRARIES_PER_JOB=5160
 export PROCESSING_PARTITION_SIZE=500
 
 # round up the total numbers because the operations are integer divisions

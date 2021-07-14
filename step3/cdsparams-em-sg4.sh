@@ -12,7 +12,7 @@
 # so to calculate it `ls ${CDSMATCHES_RESULTS_DIR}/${EM_INPUT}-vs-${SG4_INPUT} | wc` then take the least number > the value
 # that is divisible by the selected value for FILES_PER_JOB
 # the value depends on the CPU and memory resources available on the machine. If running on the grid requesting 20 cores
-export TOTAL_FILES=72000
+export TOTAL_FILES=44600
 # for split gal4 drivers we can use up to 200 files per job - for MCFO we cannot go higher than 100 since the number of MCFOs
 # is much larger
 export FILES_PER_JOB=200
