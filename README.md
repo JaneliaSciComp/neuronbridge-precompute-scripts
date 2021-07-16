@@ -400,6 +400,8 @@ This step uploads the data to the AWS cloud. There are several goups of files to
 **Run:**
 - on any computer that has AWS command-line client installed
 - user must have credentials for our account, configured in the client
+- (optional) if you need to remove previous results, the command looks like this:
+    `aws s3 rm s3://bucket-name/example --recursive`
 - in general, the command to upload is `util/upload.sh`
     + by default, for safety, the script will only print the commands it will execute
     + edit to comment in/out the two `EXEC_CMD` values; "echo" is the command preview; empty = do it for real
