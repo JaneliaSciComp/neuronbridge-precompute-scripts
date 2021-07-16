@@ -318,6 +318,11 @@ This step basically reverses step 3 (masks <--> libraries). Note:
 
 - it shares the job partitioning from step 3; no user parameters to update
     + although you can if you need to; copy the appropriate variables from the step 3 parameters file into the step 4 file and change them there
+
+--> that is entirely wrong; the number of jobs differs because we're doing the opposite direction; need to update this!
+
+
+
 - needs to be run on high memory machine; the computer-related parameters _are_ different for step 4
 - in the parameter file, it's still masks = EM, libraries = LM, even though we're really doing the reverse
     
@@ -393,6 +398,7 @@ This step uploads the data to the AWS cloud. There are several goups of files to
         -name "*.json" \
         -printf "%f\n" | sed s/.json// | sort -u > publishedNames.txt
 ```
+    + note: this will catch the names of the three .json files at the top level of `mips/`; edit the file and delete by hand (easier than writing a script to do it!)
 - create/edit `working/paths.json` file
     + make sure the buckets are right for the site you're uploading data for
     + consider not updating the "precomputedDataRootPath" immediately; this controls which data version of those available is used by the website, and you probably want to do this last and separately, after you're sure all other uploads are done
