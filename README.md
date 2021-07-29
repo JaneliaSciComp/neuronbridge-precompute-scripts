@@ -106,6 +106,11 @@ The intention is that the user will edit various cdparams files as the workflow 
         * "20pxRGB" = "zgap" variant
         * gradiants = "grad" variant
         * some archives might have more than one variant within
+        * in the main directory, the `_FL.tif` files should not appear; move into fl/ subdirectory
+            - this is how it was set up in v1.1
+            - if you don't do this, you get spurious MIPs in the searches
+            - this procedures still being worked on!
+            - there will not be _FL variants for VNC or full brain; it's only to address the asymmetry in hemibrain images
 - copy files into directory (LM version):
     + (to be filled in)
 - adjust ownership & permissions:
