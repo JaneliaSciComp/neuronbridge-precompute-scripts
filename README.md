@@ -205,6 +205,7 @@ cluster |  |  |  | can be used for parallel jobs if time critical and budget ava
 ```
 - filenames are specified in `global-cdsparams.sh` as `EM_INPUT` etc.
 - each json file is mid-sized, ~5-500Mb
+- optional: run `util/find-mip-mismatches.py <mips dir> <aggregate mips file>`; expected output is `ID sets match`; there will likely be many duplicates; this is fine, as there are variants that will be counted that way
 
 
 ## Step 1.5: Rob uploads images to S3
@@ -229,8 +230,11 @@ Determine the number of MIPs found in step 1. Edit `global-cdsparams.sh` with th
 - edit `EM_COUNT` to `grep imageURL ${MIPSDIR}/${EMINPUT}.json | wc` (first value)
 - edit `MCFO_COUNT` to `grep imageURL ${MIPSDIR}/${MCFOINPUT}.json | wc` (first value)
 - edit `SG4_COUNT`: `grep imageURL ${MIPS_DIR}/${SG4_INPUT}.json | wc` (first value)
-
-You should not need to edit any of the job partitioning numbers. They are in `step2-cdsparams-em-sg4.sh` and `step-cdparams-em-mcfo.sh` if you do.
+- edit job partitioning numbers in `step2/cdsparams-em-sg4.sh` and `step2/cdsparams-em-mcfo.sh`
+    + for `MASKS_PER_JOB`, put in the number of EM files; we do all the masks in each job
+    + for `LIBRARIES_PER_JOB`, we've been using about 5000; for MCFO, use that; for SG4, use the actual number of SG4 files, as it's close enough to 5000
+    + leave `PROCESSING_PARTITION_SIZE` at 500
+    + these numbers are chosen empirically; the results is that EM-SG4 will run in one job; EM-MCFO will require dozens (35 at last run)
 
 ### Perform searches
 
