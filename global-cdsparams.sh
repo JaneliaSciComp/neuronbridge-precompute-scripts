@@ -30,7 +30,7 @@ export JAVA_OPTS=""
 
 # data sizes to be filled in by the user
 # EM_COUNT: `grep imageURL ${MIPS_DIR}/${EM_INPUT}.json | wc` (first value)
-export EM_COUNT=71850
+export EM_COUNT=44476
 
 # MCFO_COUNT: `grep imageURL ${MIPS_DIR}/${MCFO_INPUT}.json | wc` (first value)
 export MCFO_COUNT=175472
