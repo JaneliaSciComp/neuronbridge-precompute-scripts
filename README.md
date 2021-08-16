@@ -253,7 +253,7 @@ In this step, in the parameter file, the masks = EM data, and the libraries = LM
 **Expected output:**
 - running time (v2.2):
     + split gal4: ~2 hours
-    + MCFO: ~75 hours (3+ days)
+    + MCFO: ~42 hours (2 days)
 - files created (v2.2 naming scheme):
 ```
     working/cdsresults.matches
@@ -285,7 +285,9 @@ In this step, in the parameter file, the masks = EM data, and the libraries = LM
 Determine the number of search results files found in step 2. Edit `step3/cdsparams-em-sg4.sh` with the results of these commands:
 - `source global-cdsparams.sh`
 - count number of results files: `ls ${CDSMATCHES_RESULTS_DIR}/${EM_INPUT}-vs-${SG4_INPUT} | wc`
-- for running on mouse[12], leave `FILES_PER_JOB=200`
+- for running on mouse[12]
+    + `FILES_PER_JOB=200` for SG4
+    + `FILES_PER_JOB=100` for MCFO
 - set `TOTAL_FILES` to the smallest multiple of `FILES_PER_JOB` that is greater or equal to the number of results files found above
     + eg, if # results = 1234 and `FILES_PER_JOB` is 200, choose 1400
 
