@@ -18,7 +18,7 @@ export TOTAL_FILES=44600
 export FILES_PER_JOB=200
 
 export START_FILE_INDEX=0
-export TOTAL_JOBS=$(((TOTAL_FILES - START_FILE_INDEX) / FILES_PER_JOB))
+export TOTAL_JOBS=$(((TOTAL_FILES - START_FILE_INDEX) / FILES_PER_JOB + 1))
 
 # value should be smaller than for searches, perhaps 5-50 (vs 100-500 for searches)
 export PROCESSING_PARTITION_SIZE=50
