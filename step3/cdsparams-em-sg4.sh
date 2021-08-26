@@ -23,6 +23,11 @@ export TOTAL_JOBS=$(((TOTAL_FILES - START_FILE_INDEX) / FILES_PER_JOB + 1))
 # value should be smaller than for searches, perhaps 5-50 (vs 100-500 for searches)
 export PROCESSING_PARTITION_SIZE=50
 
+# grad and zgap locations
+export GA_PRECOMPUTED_FILES_LOCATION=/nrs/jacs/jacsData/filestore/system/ColorDepthMIPs/JRC2018_Unisex_20x_HR/flylight_split_gal4_published
+export CDGA_GRADIENTS_LOCATION=${GA_PRECOMPUTED_FILES_LOCATION}/grad
+export CDGA_ZGAP_LOCATION=${GA_PRECOMPUTED_FILES_LOCATION}/zgap
+
 # ------------------------------
 # the input from the previous step
 export MASKS_FILES="${MIPS_DIR}/${EM_INPUT}.json"
