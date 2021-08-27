@@ -27,6 +27,7 @@ export PROCESSING_PARTITION_SIZE=50
 export GA_PRECOMPUTED_FILES_LOCATION=/nrs/jacs/jacsData/filestore/system/ColorDepthMIPs/JRC2018_Unisex_20x_HR/flylight_split_gal4_published
 export CDGA_GRADIENTS_LOCATION=${GA_PRECOMPUTED_FILES_LOCATION}/grad
 export CDGA_ZGAP_LOCATION=${GA_PRECOMPUTED_FILES_LOCATION}/zgap
+export CDGA_ZGAP_SUFFIX=_RGB20px
 
 # ------------------------------
 # the input from the previous step
