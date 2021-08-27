@@ -8,7 +8,7 @@
 export WORKING_DIR=/nrs/neuronbridge/v2.2/
 
 # code locations
-CDS_JAR_VERSION="2.7.0"
+CDS_JAR_VERSION="2.8.0"
 export CDS_JAR=${WORKING_DIR}/colormipsearch/target/colormipsearch-${CDS_JAR_VERSION}-jar-with-dependencies.jar
 export SCRIPT_DIR=${WORKING_DIR}/colormipsearch/colormipsearch-tools/src/main/scripts
 
