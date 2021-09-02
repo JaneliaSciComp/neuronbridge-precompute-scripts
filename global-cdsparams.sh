@@ -36,7 +36,7 @@ export EM_COUNT=44476
 export MCFO_COUNT=175472
 
 # SG4_COUNT: `grep imageURL ${MIPS_DIR}/${SG4_INPUT} | wc` (first value)
-export SG4_COUNT=5160
+export SG4_COUNT=6874
 
 
 
