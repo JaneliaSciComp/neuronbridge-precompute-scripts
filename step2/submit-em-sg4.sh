@@ -28,7 +28,7 @@ function gridRun {
     from=$1
     # this is tricky and has not been tested yet because we have to run a function from this file
     to=$2
-    bsub -n ${CORES_RESOURCE} -J CDS[${from}-${to}] -P emlm \
+    bsub -n ${CORES_RESOURCE} -J CDS[${from}-${to}] -P ${CLUSTER_PROJECT_CODE} \
         ${SCRIPT_DIR}/submitCDSJob.sh
 }
 

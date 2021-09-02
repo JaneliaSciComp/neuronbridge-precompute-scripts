@@ -82,6 +82,11 @@ export CDS_FINAL_DIR=${WORKING_DIR}/${CDS_FINAL_SUBDIR}
 
 
 # ------------------------------------------------------------
+# cluster info
+export CLUSTER_PROJECT_CODE="neuronbridge"
+
+
+# ------------------------------------------------------------
 # processing details
 
 # Color depth search params

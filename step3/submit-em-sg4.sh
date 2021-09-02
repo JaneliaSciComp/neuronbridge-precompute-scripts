@@ -28,7 +28,7 @@ function gridRun {
     from=$1
     to=$2
     echo "Running jobs: ${from} - ${to}"
-    bsub -n ${CORES_RESOURCE} -J CDGA[${from}-${to}] -P emlm \
+    bsub -n ${CORES_RESOURCE} -J CDGA[${from}-${to}] -P ${CLUSTER_PROJECT_CODE} \
         ${SCRIPT_DIR}/submitGAJob.sh ${CDGA_INPUT_DIR} ${CDGA_OUTPUT_DIR}
 }
 
