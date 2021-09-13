@@ -27,7 +27,7 @@ def idsfrommips(filepath):
     return [item["id"] for item in data]
 
 def idsfromdir(directory):
-    # return IDs from directory with files named like <MIP ID>.json
+    # return IDs from directory with files named like <published name>.json or <body ID>.json
     results = []
     for filename in os.listdir(directory):
         path = os.path.join(directory, filename)
