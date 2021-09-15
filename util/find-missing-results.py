@@ -38,7 +38,7 @@ def idsfromresults(directory):
     for filename in os.listdir(directory):
         items = filename.split('.')
         if items[-1] == "json":
-            results.apppend(items[0])
+            results.append(items[0])
     return results
 
 
