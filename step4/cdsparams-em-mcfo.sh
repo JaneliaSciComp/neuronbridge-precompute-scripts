@@ -12,10 +12,10 @@
 # so to calculate it `ls ${CDSMATCHES_RESULTS_DIR}/${MCFO}-vs-${EM_INPUT} | wc` then take the least number > the value
 # that is divisible by the selected value for FILES_PER_JOB
 # the value depends on the CPU and memory resources available on the machine. If running on the grid requesting 20 cores
-export TOTAL_FILES=79700
+export TOTAL_FILES=80000
 # for split gal4 drivers we can use up to 200 files per job - for MCFO we cannot go higher than 100 since the number of MCFOs
 # is much larger
-export FILES_PER_JOB=100
+export FILES_PER_JOB=1000
 
 export START_FILE_INDEX=0
 export TOTAL_JOBS=$(((TOTAL_FILES - START_FILE_INDEX) / FILES_PER_JOB + 1))
@@ -52,8 +52,8 @@ export MEM_RESOURCE=460
 
 # a cache size of 100000 is OK if there are at least 160GB of memory - otherwise set it to 50000 or
 # to some other reasonable value based on the available memory
-export MIPS_CACHE_SIZE=100000
-export MIPS_CACHE_EXPIRATION=60
+export MIPS_CACHE_SIZE=50000
+export MIPS_CACHE_EXPIRATION=-1
 
 
 # ------------------------------
