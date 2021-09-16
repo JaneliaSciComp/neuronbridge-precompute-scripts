@@ -35,12 +35,12 @@ export MIPS_CACHE_EXPIRATION=60
 
 # the selection of the number of masks or libraries per job is empirical based on the size of the libraries and/or masks
 export MASKS_PER_JOB=44476
-export LIBRARIES_PER_JOB=5160
+export LIBRARIES_PER_JOB=1000
 export PROCESSING_PARTITION_SIZE=500
 
 # round up the total numbers because the operations are integer divisions
-export JOBS_FOR_LIBRARIES=$((SG4_COUNT / LIBRARIES_PER_JOB))
-export JOBS_FOR_MASKS=$((EM_COUNT / MASKS_PER_JOB))
+export JOBS_FOR_LIBRARIES=$((SG4_COUNT / LIBRARIES_PER_JOB + 1))
+export JOBS_FOR_MASKS=$((EM_COUNT / MASKS_PER_JOB + 1))
 export TOTAL_JOBS=$((JOBS_FOR_LIBRARIES * JOBS_FOR_MASKS))
 
 
@@ -53,4 +53,5 @@ export TOTAL_JOBS=$((JOBS_FOR_LIBRARIES * JOBS_FOR_MASKS))
 # LAST_JOB=1
 
 # use localRun to run on the host on which the command is invoked or gridRun to invoke it using bsub
-RUN_CMD="localRun"
+# RUN_CMD="localRun"
+RUN_CMD="gridRun"

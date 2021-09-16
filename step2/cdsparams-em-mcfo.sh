@@ -39,8 +39,8 @@ export LIBRARIES_PER_JOB=5000
 export PROCESSING_PARTITION_SIZE=500
 
 # round up the total numbers because the operations are integer divisions
-export JOBS_FOR_LIBRARIES=$((MCFO_COUNT / LIBRARIES_PER_JOB))
-export JOBS_FOR_MASKS=$((EM_COUNT / MASKS_PER_JOB))
+export JOBS_FOR_LIBRARIES=$((MCFO_COUNT / LIBRARIES_PER_JOB + 1))
+export JOBS_FOR_MASKS=$((EM_COUNT / MASKS_PER_JOB + 1))
 export TOTAL_JOBS=$((JOBS_FOR_LIBRARIES * JOBS_FOR_MASKS))
 
 
