@@ -5,7 +5,7 @@
 source "$(dirname ${BASH_SOURCE[0]})/../global-cdsparams.sh"
 
 LIBNAME=flylight_split_gal4_published
-LIBDIR=/nrs/jacs/jacsData/filestore/system/ColorDepthMIPs/JRC2018_Unisex_20x_HR/flylight_split_gal4_published
+LIBDIR=/nrs/scicompsoft/emlm/public_release_2021
 
 java ${JAVA_OPTS} \
     -jar ${CDS_JAR} \
@@ -15,9 +15,9 @@ java ${JAVA_OPTS} \
     -l ${LIBNAME} \
     --excluded-libraries flylight_splitgal4_drivers \
     --librariesVariants \
-        ${LIBNAME}:searchable_neurons:${LIBDIR}/segmentation \
-        ${LIBNAME}:gradient:${LIBDIR}/grad \
-        ${LIBNAME}:zgap:${LIBDIR}/zgap \
+        ${LIBNAME}:searchable_neurons:${LIBDIR}/Split_segmented_CDM_G14_06172021.zip \
+        ${LIBNAME}:gradient:${LIBDIR}/Split_segmented_gradient_06172021.zip \
+        ${LIBNAME}:zgap:${LIBDIR}/Split_segmented_RGB20px_06172021.zip \
     --include-mips-without-publishing-name 2 \
     --segmented-image-handling 2 \
     --segmented-mips-variant searchable_neurons \
