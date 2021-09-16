@@ -5,7 +5,7 @@
 source "$(dirname ${BASH_SOURCE[0]})/../global-cdsparams.sh"
 
 LIBNAME=flylight_split_gal4_published
-LIBDIR=/nrs/scicompsoft/emlm/public_release_2021
+LIBDIR=/nrs/jacs/jacsData/filestore/system/ColorDepthMIPs/JRC2018_Unisex_20x_HR/flylight_split_gal4_published
 
 java ${JAVA_OPTS} \
     -jar ${CDS_JAR} \
@@ -14,7 +14,7 @@ java ${JAVA_OPTS} \
     --authorization "Bearer ${JACSTOKEN}" \
     -l ${LIBNAME} \
     --excluded-libraries flylight_splitgal4_drivers \
-    --librariesVariants ${LIBNAME}:searchable_neurons:${LIBDIR}/Split_segmented_CDM_G14_06172021.zip \
+    --librariesVariants ${LIBNAME}:searchable_neurons:${LIBDIR}/segmentation \
     --include-mips-without-publishing-name 2 \
     --segmented-image-handling 1 \
     --segmented-mips-variant searchable_neurons \
