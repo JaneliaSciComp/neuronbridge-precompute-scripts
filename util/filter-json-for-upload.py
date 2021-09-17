@@ -49,7 +49,7 @@ def main():
     mipfilenames = os.listdir(inputdir)
     for fn in mipfilenames:
         path = os.path.join(inputdir, fn)
-        data = json.loads(open(filepath, 'rt').read())
+        data = json.loads(open(path, 'rt').read())
         for item in data["results"]:
             if "imageURL" not in item or item["imageURL"] == "":
                 missing.add(item["id"])
