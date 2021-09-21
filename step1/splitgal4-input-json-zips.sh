@@ -24,4 +24,4 @@ java ${JAVA_OPTS} \
     --segmentation-channel-base 1 \
     --urls-relative-to 1 \
     -od ${MIPS_DIR} \
-    --output-filename ${SG4_INPUT}
+    --output-filename ${SG4_INPUT}-zips
