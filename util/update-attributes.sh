@@ -15,8 +15,8 @@ source "$(dirname ${BASH_SOURCE[0]})/../global-cdsparams.sh"
 java ${JAVA_OPTS} \
     -jar ${CDS_JAR} \
     replaceAttributes \
-    -attrs ${MIPS_DIR}/${EM_INPUT} \
-    --input-dirs ${CDS_FINAL_DIR}/"flylight-vs-flyem" \
+    -attrs ${MIPS_DIR}/${EM_INPUT}.json \
+    --input-dirs ${CDS_FINAL_DIR}/flylight-vs-flyem \
     --id-field id  \
     --fields-toUpdate searchablePNG \
-    -od ${CDS_FINAL_DIR}/"flylight-vs-flyem-updated"
+    -od ${CDS_FINAL_DIR}/flylight-vs-flyem-updated
