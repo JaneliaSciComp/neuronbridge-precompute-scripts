@@ -6,12 +6,22 @@ This repository is meant to record Janelia-specific operational knowledge and re
 
 - private; appropriate for Janelia only
 - assumes/imposes a specific directory structure
-- reproducible; every detail except authentication secrets should appear in this repo
+- comprehensive; every detail except authentication secrets should appear in this repo
     + so no secret auxiliary scripts that fix things "just this once"; if you need to do something, include the script
     + changeable details should be isolated and centralized, however
 - historical; use tags and/or branches as needed so what was actually run can be frozen while allowing future runs to have different details
 
-**NOTE** This is a work in progress. Obviously going to have to renumber the steps.
+**NOTE** This is a work in progress. The step ordering and numbering is particularly confusing right now.
+
+
+## Note on EM datasets: hemibrain vs. VNC
+
+colormipsearch and colormipsearch-scripts were initially developed to run color depth searches for LM images against the hemibrain EM dataset (and vice versa). It was later extended to handle the VNC EM dataset as well. 
+
+In general, everything should be very similar. There is a corresponding global parameter files beginning with "vnc-", and all the script step subdirectories are duplicated with "vnc-" prefixes (the script within have the same names, for consistency). The output will be segregated into a "vnc/" subdirectoy. In an ideal world, we'd go back and rename everything so there is a "hemibrain/" directory as well, but for now, any data in the main directory will be hemibrain data.
+
+This is due for a better refactor in the future.
+
 
 
 # Directory structure
@@ -24,9 +34,11 @@ workingdir/
         target/ jar file
         src/stuff/scripts
     colormipsearch-scripts/
-        stuff
+        step directories/
+        parameter files
+        util/
     mips/
-    (etc)
+    (other output directories)
 
 ```
 
@@ -35,6 +47,7 @@ workingdir/
 
 Prerequisites:
 - color depth MIPs must be uploaded to the workstation (see section below)
+- images should be uploaded to S3 by Rob (see below)
 - user needs JACS auth
     + see https://wiki.int.janelia.org/wiki/display/JW/Authentication+Service
     + you will need to obtain a token and have it available in the JACSTOKEN environment variable for some steps
@@ -43,10 +56,10 @@ Prerequisites:
         * it's a Python script that requires third-party "requests" library installed
         * usage: `export JACSTOKEN=$(util/get-jacs-token.py)`
         * note that the password prompt and any warnings will not be captured in the variable
-- user needs AWS auth
-- the working directory should have enough disk space (3T+)
+- user needs AWS auth to do the uploads
+- the working directory should have enough disk space (several Terabytes)
 - user needs access to servers: mouse1, mouse2, imagecatcher
-- cluster access optional
+- cluster access optional but highly recommended
 
 Setup:
 - determine the data version of the release
@@ -61,7 +74,7 @@ Setup:
     + CDS_JAR_VERSION
 - edit global parameters file, optional/as needed:
     + JAVA runtime variables and options
-    + (?) input file names ([EM|SG4|MCFO]_INPUT)
+    + input file names if desired (`[EM|SG4|MCFO]_INPUT`)
 
 General notes:
 - adjust Java paths and parameters in the global parameters file
@@ -71,25 +84,24 @@ General notes:
 
 git for recording history:
 
-The intention is that the user will edit various cdparams files as the workflow is run, but that _no value will be edited after it is used._ If so, it needs to be split into a new cdparams files (like the others)! Likewise, if any auxiliary scripts need to be run in order to fix or adjust things, they should appear as run somewhere in the directory structure (with notes, please). Then, once the workflow is done, the whole repo will contain the history of how it was run. To that end:
+The intention was that the user would edit various cdparams files as the workflow is run, but that _no value will be edited after it is used._ If so, it needs to be split into a new cdparams files (like the others)! Likewise, if any auxiliary scripts need to be run in order to fix or adjust things, they should appear as run somewhere in the directory structure (with notes, please). Then, once the workflow is done, the whole repo will contain the history of how it was run. That being said, due to the way the steps are currently ordered, it may not always happen in practice. But in an ideal world:
 
-- at the outset, after cloning, create and checkout a branch of colormipsearch-scripts with a good descriptive name for this iteration
 - do not edit anything (scripts or parameters) after it's been used
 - commit all changes and all extra scripts etc. that were needed
-- when done, commit and push the branch
-- switch back to main
-- as needed, merge improvements back to main from the branch
+- when done, add a tag describing the release just calculated
+- note: could use branches; but typically we're only calculating one dataset at a time in a linear manner
 
-# Loading color depth MIPs into JACS
+# Loading color depth MIPs into JACS libraries
 
 - the color depth MIPs are organized into libraries in JACS; they can be viewed in the Janelia Workstation
     + folder = "Color Depth Libraries"
     + subfolder = library, eg "flyem_hemibrain_1_2_1"
     + subsubfolder = alignment space, eg "JRC2018_Unisex_20x_HR"
+    + subsubsubfolder = variants
 - first, the library needs to exist in the config server http://config.int.janelia.org/config/cdm_library
     + API is here: https://github.com/JaneliaSciComp/Centralized_Config
     + Rob Svirskas can do this
-- stored on disk here: /nrs/jacs/jacsData/filestore/system/ColorDepthMIPs/
+- libraries are stored on disk: /nrs/jacs/jacsData/filestore/system/ColorDepthMIPs/
     + again, subdir = alignment space
 - create a subdirectory in the appropate alignment space with the library's identifier
 - copy files into directory (EM version):
@@ -110,23 +122,55 @@ The intention is that the user will edit various cdparams files as the workflow 
             - this is how it was set up in v1.1
             - if you don't do this, you get spurious MIPs in the searches
             - this procedures still being worked on!
-            - there will not be _FL variants for VNC or full brain; it's only to address the asymmetry in hemibrain images
+            - there will not be `_FL` variants for VNC or full brain; it's only to address the asymmetry in hemibrain images
+    + adjust ownership & permissions:
+        * (you)/scicompsoft works, as does jacs/jacsdata
+        * ug+rw, o+r
+            - I suspect write access isn't needed for running it, but is useful to let other people clean up stuff if needed
 - copy files into directory (LM version):
-    + (to be filled in)
-- adjust ownership & permissions:
-    + (you)/scicompsoft works, as does jacs/jacsdata
-    + ug+rw, o+r
-        * I suspect write access isn't needed for running it, but
-    is useful to let other people clean up stuff if needed
-- wait for synchronization process to run; can take a day
-    + sync process logs: on jacs2 server, /opt/servers/jacs2/undertow/asyncweb/logs/jacs.log
+    + (briefly, to be refined)
+    + use the tool in the jar; do not do this by hand!  filenames need to be adjusted
+    + there are two versions of step 1 scripts: one that operates from zip files, one from libraries; for this procedure, want the one with the zips
+    + run it to create an aggregate json file where the variants point to the zip files
+        * note that this will work for the searches!  however, it can't be used for image uploads, as that needs actual files on the file system
+    + now you can run `util/copy-variants-xxx.sh` scripts (xxx = sg4 or mcfo); edit with the just-created json file path
+    + expected running time: few minutes
+- synchronization process:
+    + if you wait for it to run automatically, can take up to a day or so (based on a few observation)
+    + or you can start it manually via the REST API:
+        * http://jacs2.int.janelia.org:9100/api/rest-v2/async-services/colorDepthLibrarySync
+        * POST data = `{"owner": "user:olbrisd", "args": ["-alignmentSpace", "JRC2018_Unisex_20x_HR", "-library", "flylight_split_gal4_published"]}`
+        * header = `header: {'Authorization': 'Bearer ' + your JACS token}`
+        * adjust the username, token, and desired alignment space and library; note that variant libraries under the main lib will also be synced
+    + either way: sync process logs: on jacs2 server, /opt/servers/jacs2/undertow/asyncweb/logs/jacs.log
 - you can check results in the workstation
     + right-click to open the library/alignment space folder in a viewer
     + single-click images to check attributes in the Data Inspector
 
+# Uploading images to S3
+
+This is a confusing step!  Be careful.
+
+- Rob Svirskas uploads images to S3; when he does, he populates two fields in the MIPs collection containing their URLs
+- the individual json files will only populate imageURL field from the database; if they have that field, the image is uploaded
+- however, the aggregate json file will populate the imageURL field with the URL it would or should have, whether it's been uploaded or not
+- this aggreate json file is also the one Rob uses for input
+    + he wants only the images that need uploading, though, not all of them (ie, just the updates)
+- so the order of operation is something like this:
+    + after the library has been created, run step 1 normally to create the aggregate json
+    + also run step 0 to create the individual json files
+    + run `util/filter-json-for-upload.py`; this script looks at the individual json files to determine which ones are missing imageURL and thus need uploading; it then filters the aggregate json and removes those that do have images
+- the filtered json file can then be copied to `/groups/scicompsoft/informatics/data/release_libraries/v2.2.0` (with the right version number) for upload; try to name the file with the driver (split gal4, mcfo, whatever), the date, and the brain dataset (eg, hemibrain or vnc)
+- let Rob know it's ready
+
+Once Rob has done the upload and populated the db, it's time to start the workflow proper. 
+
+Note that you'll be running at least step 0 again, so the imageURL field will be populated. I'm not 100% sure you need to re-run step 1, but I suspect it's a good idea, just in case. If the imageURL fields have changed at all, it'll pick up the current ones.
 
 
-# Running the workflow
+
+
+# Running the workflow - general
 
 - Run each step in sequence. If a step has multiple scripts within a folder, order doesn't matter.
 
@@ -134,15 +178,13 @@ The intention is that the user will edit various cdparams files as the workflow 
 
 Step | Command | Memory | Parallel? | Computer | Running time
 ---- | ------- | ------ | --------- | -------- | ------------ 
-Step 0: Generate MIPs metadata | `groupMIPsByPublishedName` |  |  |  |  < 1/2 hour
-Step 1: Prepare LM and EM JSON input | `createColorDepthSearchJSONInput` |  |  |  | < 1 hour
-Step 1': Replace image URLs (no longer needed?) | `replaceAttributes` | | | | 
+Step 0: Generate MIPs metadata | `groupMIPsByPublishedName` |  |  |  |  ~30 minutes
+Step 1: Prepare LM and EM JSON input | `createColorDepthSearchJSONInput` |  |  |  | ~1 hour
 Step 2: Compute color depth matches | `searchFromJSON` |  | :white_check_mark: | mouse1, mouse2  | few hours (SG4) to few days (MCFO)
 Step 3: Calculate gradient score | `gradientScore` | 180G+  | :white_check_mark: | mouse1,2 | few days 
 Step 4: Update the gradient score | `gradientScoresFromMatchedResults` | 480G | | imagecatcher | hours to days            
 Step 5: Merge flyem results | `mergeResults` | | | | ~30-40 minutes          
-Step 6: Normalize and rank results (not needed anymore?) | `normalizeScores` | | | | minutes       
-Step 7: Upload to AWS S3 | n/a | | | | ~45 minutes
+
 
 ## Computational resources
 
@@ -153,6 +195,21 @@ imagecatcher | 28 | 500G | :white_check_mark: | used for high-memory jobs
 c13u05 (aka nextflow) | 40 | 128G |  |
 personal workstations |  |  |  | can be used for low resource jobs
 cluster |  |  |  | can be used for parallel jobs if time critical and budget available
+
+## Cluster use
+
+Steps 2, 3, and 4 can and often should be run on the cluster. In the parameters file, you will need to make the following changes:
+
+- in the global parameters file, check that `CLUSTER_PROJECT_CODE` is set to the proper current project code for cluster billing
+- set `RUN_CMD="gridRun"`
+- look over the computer resource section; you may need to adjust memory and number of cores available to match the cluster nodes rather than the SciComp servers
+- look over the "job partitioning" section; you may want to adjust how the jobs are batched up; the default parameters assume you're running on one SciComp server, and you may benefit from more jobs/batches when running on the cluster
+    + in particular, since split gal 4 datasets are smaller, they are often run in one job on SciComp servers; you should run several on the cluster
+    + MCFO jobs, though, are already batched into typically hundreds of jobs, so you probably don't need to adjust for the cluster
+
+
+
+# Running the workflow - individual steps
 
 ## Step 0: generate MIPs metadata
 
@@ -205,20 +262,28 @@ cluster |  |  |  | can be used for parallel jobs if time critical and budget ava
 ```
 - filenames are specified in `global-cdsparams.sh` as `EM_INPUT` etc.
 - each json file is mid-sized, ~5-500Mb
-- optional: run `util/find-mip-mismatches.py <mips dir> <aggregate mips file>`; expected output is `ID sets match`; there will likely be many duplicates; this is fine, as there are variants that will be counted that way
+- optional: run `util/find-mip-mismatches.py <mips dir> <aggregate mips file>`; expected output is `ID sets match`
+    + there will likely be many duplicates; this is fine, as (eg) multiple channels will count as duplicates
+    + however, there should be no IDs in the directory that are not in the aggregate file; if that happens, it will cause problems later; the website will show images in the initial line/body ID search that will not have search results
 
 
 ## Step 1.5: Rob uploads images to S3
 
 Rob Svirskas will upload images to S3 and post their URLs to JACS.
 
-- in /groups/scicompsoft/informatics/data/release_libraries, create subdir with data version name
-- copy json files from step 1 to that new dir and let Rob know
+- in `/groups/scicompsoft/informatics/data/release_libraries`, create subdir with data version name if it doesn't exist
+- copy aggregate json files from step 1 to that new dir and let Rob know
 - "imageURL" and "thumbnailURL" attributes will be empty before Rob gets them into JACS
 - so we'll have to repeat step 0 and 1 so those fields will be populated
     + in fact, since they don't depend on each other, could do step 1, have Rob do uploads, then repeat 1 and do 0 for the first time
-    + --> still working this out
+    + still working this out! there is undoubtedly a better way to do this
 - once populated, those fields ought to be carried along to the end results json files
+
+If it's not the first time for this dataset (eg, if it's a re-run), then many or most images will have already been uploaded. There's a script to filter the json file so it only contains the MIPs missing the "imageURL" field: 
+
+`usage: util/filter-json-for-upload.py inputjsonpath outputjsonpath`
+
+Move that output file to the path noted above, and probably rename it with a date, and tell Rob.
 
 
 ## Step 2: Compute color depth matches
@@ -252,8 +317,8 @@ In this step, in the parameter file, the masks = EM data, and the libraries = LM
 
 **Expected output:**
 - running time (v2.2):
-    + split gal4: ~2 hours
-    + MCFO: ~42 hours (2 days)
+    + split gal4: ~20 hours (cluster)
+    + MCFO: ~42 hours (2 days) (one server) (timed before a performance-affecting fix!!)
 - files created (v2.2 naming scheme):
 ```
     working/cdsresults.matches
@@ -293,7 +358,7 @@ Determine the number of search results files found in step 2. Edit `step3/cdspar
 
 Repeat for MCFO.
 
-### Perform gradient scoring 
+### Perform gradient scoring
 
 As with step 2, this step is done in parallel, usually run on SciComp servers. Almost all of the step 2 comments above apply.
 
@@ -307,8 +372,8 @@ For this step, masks = EM, libraries = LM. Output is only produced for this comb
 
 **Expected output:**
 - running time (v2.2):
-    + split gal4: 
-    + MCFO: 2 days? (jobs got interrupted, didn't get a good timing)
+    + split gal4: ~60h on cluster
+    + MCFO: ~1400h on cluster
 - files created:
 ```
     working/cdsresults.ga
@@ -330,12 +395,13 @@ This step basically reverses step 3 (masks <--> libraries). Note:
 - it shares the job partitioning from step 3; no user parameters to update
     + although you can if you need to; copy the appropriate variables from the step 3 parameters file into the step 4 file and change them there
 
---> that is entirely wrong; the number of jobs differs because we're doing the opposite direction; need to update this!
+--> that is entirely wrong; the number of jobs differs because we're doing the opposite direction; need to update these docs re: how to get right number of files!
 
 
 
 - needs to be run on high memory machine; the computer-related parameters _are_ different for step 4
 - in the parameter file, it's still masks = EM, libraries = LM, even though we're really doing the reverse
+
     
 
 ### Perform reverse gradient scroing
@@ -348,8 +414,9 @@ This step basically reverses step 3 (masks <--> libraries). Note:
 
 **Expected output:**
 - running time:
-    + split gal4:
-    + MCFO: 
+    + (times after Cristian's fix for out-of-memory issues)
+    + split gal4: ~10m 
+    + MCFO: ~14h 
 - files created:
 ```
     working/cdsresults.ga
@@ -385,6 +452,21 @@ This step basically reverses step 3 (masks <--> libraries). Note:
 ```
 
 
+## Step 5.5: Update fields
+
+Sometimes the final match json files are missing fields. For example, if the searches are run before the images are uploaded to S3, the imageURL field in the match json will not be populated. Rerunning the searches would be computationally expensive, so we need to update the matches to include the fields.
+
+
+
+**in progress**
+
+
+
+
+
+
+
+
 ## Step 6: Normalize
 
 This step seems not to be needed any more.
@@ -401,7 +483,8 @@ This step uploads the data to the AWS cloud. There are several goups of files to
     + set version folder name based on data version
     + at this point you can begin uploading MIPs and results
 - create/edit `working/DATA_VERSION` with the new verison
-- create/edit `working/DATA_NOTES.md` with details of what's included and what's changed
+- in the https://github.com/JaneliaSciComp/colormipsearch repository, edit `DATA_NOTES.md` with details of what's included and what's changed
+    + copy that file to `working/DATA_NOTES.md`
 - `working/publishedNames.txt`: create this file with the following code fragment:
 ``` cd working
     find mips \
@@ -413,6 +496,12 @@ This step uploads the data to the AWS cloud. There are several goups of files to
 - create/edit `working/paths.json` file
     + make sure the buckets are right for the site you're uploading data for
     + consider not updating the "precomputedDataRootPath" immediately; this controls which data version of those available is used by the website, and you probably want to do this last and separately, after you're sure all other uploads are done
+- remove previous results: if you want to remove previous results, you can remove S3 objects (including "directories") like this:
+    + this example leaves the ppp results in place but removes the rest of the results for v2.2.0:
+    + `aws s3 rm s3://janelia-neuronbridge-data-int/v2_2_0/metadata/cdsresults --recursive`
+    + `aws s3 rm s3://janelia-neuronbridge-data-int/v2_2_0/metadata/by_body --recursive`
+    + `aws s3 rm s3://janelia-neuronbridge-data-int/v2_2_0/metadata/by_line --recursive`
+
 
 **Run:**
 - on any computer that has AWS command-line client installed
