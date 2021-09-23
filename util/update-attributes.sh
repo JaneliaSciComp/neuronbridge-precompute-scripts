@@ -7,7 +7,7 @@
 
 # this script will likely be edited for each case where it is needed; all the 
 #   usual location variables are available for use; note that the fileds names 
-#   must match the fields in the json files
+#   must match the fields in the json files; multiple fields are space separated
 
 source "$(dirname ${BASH_SOURCE[0]})/../global-cdsparams.sh"
 
@@ -15,8 +15,8 @@ source "$(dirname ${BASH_SOURCE[0]})/../global-cdsparams.sh"
 java ${JAVA_OPTS} \
     -jar ${CDS_JAR} \
     replaceAttributes \
-    -attrs ${MIPS_DIR}/${EM_INPUT}.json \
-    --input-dirs ${CDS_FINAL_DIR}/flylight-vs-flyem \
+    -attrs ${MIPS_DIR}/${SG4_INPUT}.json \
+    --input-dirs ${CDGAS_RESULTS_DIR}/${EM_INPUT}-vs-${SG4_INPUT} \
     --id-field id  \
-    --fields-toUpdate searchablePNG \
-    -od ${CDS_FINAL_DIR}/flylight-vs-flyem-updated
+    --fields-toUpdate imageURL thumbnailURL searchablePNG \
+    -od ${CDGAS_RESULTS_DIR}/${EM_INPUT}-vs-${SG4_INPUT}-updated
