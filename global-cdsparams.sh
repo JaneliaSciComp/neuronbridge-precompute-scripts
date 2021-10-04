@@ -5,12 +5,13 @@
 
 # locations
 # the working directory that will hold *everything*:
-export WORKING_DIR=/nrs/neuronbridge/v2.2/
+export TOP_DIR=/nrs/neuronbridge/v2.3
+export WORKING_DIR=${TOP_DIR}/brain/
 
 # code locations
 CDS_JAR_VERSION="2.8.0"
-export CDS_JAR=${WORKING_DIR}/colormipsearch/target/colormipsearch-${CDS_JAR_VERSION}-jar-with-dependencies.jar
-export SCRIPT_DIR=${WORKING_DIR}/colormipsearch/colormipsearch-tools/src/main/scripts
+export CDS_JAR=${TOP_DIR}/colormipsearch/target/colormipsearch-${CDS_JAR_VERSION}-jar-with-dependencies.jar
+export SCRIPT_DIR=${TOP_DIR}/colormipsearch/colormipsearch-tools/src/main/scripts
 
 
 # JAVA options
@@ -33,7 +34,8 @@ export JAVA_OPTS=""
 export EM_COUNT=44476
 
 # MCFO_COUNT: `grep imageURL ${MIPS_DIR}/${MCFO_INPUT}.json | wc` (first value)
-export MCFO_COUNT=175472
+export MCFO_COUNT=349414
+
 
 # SG4_COUNT: `grep imageURL ${MIPS_DIR}/${SG4_INPUT} | wc` (first value)
 export SG4_COUNT=6874
