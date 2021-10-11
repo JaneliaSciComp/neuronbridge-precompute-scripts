@@ -7,10 +7,6 @@
 source "$(dirname ${BASH_SOURCE[0]})/../global-cdsparams.sh"
 source "$(dirname ${BASH_SOURCE[0]})/cdsparams-em-mcfo.sh"
 
-# bsug options, if you need to specify queue, eg (example sets cloud queue with a time limit)
-BSUB_OPTIONS=""
-# BSUB_OPTIONS="-q cloud -W 230"
-
 function localRun {
     if [[ $# -lt 2 ]] ; then
       echo "localRun <from> <to>"

@@ -17,25 +17,27 @@ export JOB_LOGPREFIX="${CDSMATCHES_RESULTS_DIR}/logs-em-mcfo/"
 
 
 # ------------------------------
-# computer-related numbers for mouse1/2
-export CORES_RESOURCE=20
+# on cluster, aim for half a node:
+export CORES_RESOURCE=24
 export CPU_RESERVE=1
 
 # MEM_RESOURCE value is the memory in GB available on the host on which this runs
-export MEM_RESOURCE=170
+# bit less than the allowed 15G per CPU on the cluster
+export MEM_RESOURCE=320
 
 # a cache size of 100000 is OK if there are at least 160GB of memory - otherwise set it to 50000 or
 # to some other reasonable value based on the available memory
+# we don't trust expiration anymore
 export MIPS_CACHE_SIZE=100000
-export MIPS_CACHE_EXPIRATION=60
+export MIPS_CACHE_EXPIRATION=0
 
 
 # ------------------------------
 # job partitioning
 
 # the selection of the number of masks or libraries per job is empirical based on the size of the libraries and/or masks
-export MASKS_PER_JOB=44476
-export LIBRARIES_PER_JOB=5000
+export MASKS_PER_JOB=5000
+export LIBRARIES_PER_JOB=50000
 export PROCESSING_PARTITION_SIZE=500
 
 # round up the total numbers because the operations are integer divisions
@@ -53,4 +55,9 @@ export TOTAL_JOBS=$((JOBS_FOR_LIBRARIES * JOBS_FOR_MASKS))
 # LAST_JOB=1
 
 # use localRun to run on the host on which the command is invoked or gridRun to invoke it using bsub
-RUN_CMD="localRun"
+RUN_CMD="gridRun"
+
+# bsub options, for gridRun
+# BSUB_OPTIONS=""
+# for example, set cloud queue with a 230 minute time limit:
+BSUB_OPTIONS="-q cloud -W 230"

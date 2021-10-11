@@ -55,3 +55,8 @@ export TOTAL_JOBS=$((JOBS_FOR_LIBRARIES * JOBS_FOR_MASKS))
 # use localRun to run on the host on which the command is invoked or gridRun to invoke it using bsub
 # RUN_CMD="localRun"
 RUN_CMD="gridRun"
+
+# bsub options, for gridRun
+# BSUB_OPTIONS=""
+# for example, set cloud queue with a 230 minute time limit:
+BSUB_OPTIONS="-q cloud -W 230"
