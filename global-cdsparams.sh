@@ -5,11 +5,11 @@
 
 # locations
 # the working directory that will hold *everything*:
-export TOP_DIR=/nrs/neuronbridge/v2.3
+export TOP_DIR=/nrs/neuronbridge/v2.3.0
 export WORKING_DIR=${TOP_DIR}/brain/
 
 # code locations
-CDS_JAR_VERSION="2.8.0"
+CDS_JAR_VERSION="2.9.0"
 export CDS_JAR=${TOP_DIR}/colormipsearch/target/colormipsearch-${CDS_JAR_VERSION}-jar-with-dependencies.jar
 export SCRIPT_DIR=${TOP_DIR}/colormipsearch/colormipsearch-tools/src/main/scripts
 
