@@ -17,13 +17,12 @@ export JOB_LOGPREFIX="${CDSMATCHES_RESULTS_DIR}/logs-em-mcfo/"
 
 
 # ------------------------------
-# on cluster, aim for half a node:
-export CORES_RESOURCE=24
+# on Konrad's big server this time
+export CORES_RESOURCE=62
 export CPU_RESERVE=1
 
 # MEM_RESOURCE value is the memory in GB available on the host on which this runs
-# bit less than the allowed 15G per CPU on the cluster
-export MEM_RESOURCE=320
+export MEM_RESOURCE=500
 
 # a cache size of 100000 is OK if there are at least 160GB of memory - otherwise set it to 50000 or
 # to some other reasonable value based on the available memory
@@ -51,13 +50,13 @@ export TOTAL_JOBS=$((JOBS_FOR_LIBRARIES * JOBS_FOR_MASKS))
 # job control parameters
 
 # FIRST_JOB and LAST_JOB specify the job range - if not set they default to first and last job respectivelly
-# FIRST_JOB=1
-# LAST_JOB=1
+FIRST_JOB=7
+LAST_JOB=63
 
 # use localRun to run on the host on which the command is invoked or gridRun to invoke it using bsub
-RUN_CMD="gridRun"
+RUN_CMD="localRun"
 
 # bsub options, for gridRun
 # BSUB_OPTIONS=""
 # for example, set cloud queue with a 230 minute time limit:
-BSUB_OPTIONS="-q cloud -W 230"
+# BSUB_OPTIONS="-q cloud -W 230"

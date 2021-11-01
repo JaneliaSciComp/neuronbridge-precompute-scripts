@@ -5,7 +5,10 @@
 # global parameters
 source "$(dirname ${BASH_SOURCE[0]})/../global-cdsparams.sh"
 
-SG4_DIR="${CDGAS_RESULTS_DIR}/${EM_INPUT}-vs-${SG4_INPUT}"
+# this merge is a little different; we only recalculated the MCFO, so we'll
+#   merge in the SG4 from v2.2
+SG4_DIR=/nrs/neuronbridge/v2.2/cdsresults.ga/hemibrain1.2.1-vs-split_gal4
+# SG4_DIR="${CDGAS_RESULTS_DIR}/${EM_INPUT}-vs-${SG4_INPUT}"
 MCFO_DIR="${CDGAS_RESULTS_DIR}/${EM_INPUT}-vs-${MCFO_INPUT}"
 
 java ${JAVA_OPTS} \

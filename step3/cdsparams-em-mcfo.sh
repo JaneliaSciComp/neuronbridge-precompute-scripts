@@ -15,13 +15,13 @@
 export TOTAL_FILES=30800
 # for split gal4 drivers we can use up to 200 files per job - for MCFO we cannot go higher than 100 since the number of MCFOs
 # is much larger
-export FILES_PER_JOB=100
+export FILES_PER_JOB=25
 
 export START_FILE_INDEX=0
 export TOTAL_JOBS=$(((TOTAL_FILES - START_FILE_INDEX) / FILES_PER_JOB + 1))
 
 # value should be smaller than for searches, perhaps 5-50 (vs 100-500 for searches)
-export PROCESSING_PARTITION_SIZE=50
+export PROCESSING_PARTITION_SIZE=12
 
 # grad and zgap locations
 export GA_PRECOMPUTED_FILES_LOCATION=/nrs/jacs/jacsData/filestore/system/ColorDepthMIPs/JRC2018_Unisex_20x_HR/flylight_gen1_mcfo_published
@@ -46,17 +46,16 @@ export JOB_LOGPREFIX="${CDGAS_RESULTS_DIR}/logs-em-mcfo/"
 
 
 # ------------------------------
-# computer-related numbers for mouse1/2
-export CORES_RESOURCE=20
+export CORES_RESOURCE=24
 export CPU_RESERVE=1
 
 # MEM_RESOURCE value is the memory in GB available on the host on which this runs
-export MEM_RESOURCE=170
+export MEM_RESOURCE=330
 
 # a cache size of 100000 is OK if there are at least 160GB of memory - otherwise set it to 50000 or
 # to some other reasonable value based on the available memory
-export MIPS_CACHE_SIZE=100000
-export MIPS_CACHE_EXPIRATION=60
+export MIPS_CACHE_SIZE=50000
+export MIPS_CACHE_EXPIRATION=0
 
 
 # ------------------------------
@@ -67,9 +66,10 @@ export MIPS_CACHE_EXPIRATION=60
 # LAST_JOB=1
 
 # use localRun to run on the host on which the command is invoked or gridRun to invoke it using bsub
-RUN_CMD="localRun"
+# RUN_CMD="localRun"
+RUN_CMD="gridRun"
 
 # bsub options, for gridRun
-BSUB_OPTIONS=""
+# BSUB_OPTIONS=""
 # for example, set cloud queue with a 230 minute time limit:
-# BSUB_OPTIONS="-q cloud -W 230"
+BSUB_OPTIONS="-q cloud -W 230"

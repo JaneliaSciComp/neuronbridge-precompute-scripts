@@ -15,8 +15,8 @@ source "$(dirname ${BASH_SOURCE[0]})/../global-cdsparams.sh"
 java ${JAVA_OPTS} \
     -jar ${CDS_JAR} \
     replaceAttributes \
-    -attrs ${MIPS_DIR}/${SG4_INPUT}.json \
-    --input-dirs ${CDGAS_RESULTS_DIR}/${EM_INPUT}-vs-${SG4_INPUT} \
-    --id-field id  \
+    -attrs ${MIPS_DIR}/${MCFO_INPUT}.json \
+    --input-dirs ${CDGAS_RESULTS_DIR}/${EM_INPUT}-vs-${MCFO_INPUT} \
+    --id-field imageName  \
     --fields-toUpdate imageURL thumbnailURL searchablePNG \
-    -od ${CDGAS_RESULTS_DIR}/${EM_INPUT}-vs-${SG4_INPUT}-updated
+    -od ${CDGAS_RESULTS_DIR}/${EM_INPUT}-vs-${MCFO_INPUT}-updated
