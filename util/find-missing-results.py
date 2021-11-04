@@ -3,7 +3,15 @@
 
 compare mips and final results directories to verify all MIPs have results
 
-(derived from find-mip-mismatches.py)
+- get published names from aggregate json MIPs file
+- verify each name has an individual MIP file
+- read each of those files
+- verify each MIP in each file has a results file
+
+output is printed to screen as json so you can, eg, read it into a tool 
+that corrects any of these problems
+
+usage: find-missing-results.py <aggregate mip file> <directory of individual mips> <final results directory>
 
 """
 
@@ -18,19 +26,19 @@ def readonemip(filepath):
     data = json.loads(open(filepath, 'rt').read())
     return data["results"]
 
+def readaggregatemip(filepath):
+    # read data from an aggregate MIP file
+    return json.loads(open(filepath, 'rt').read())
+
+def namesfrommip(filepath):
+    # get published names from an aggregate MIP
+    data = readaggregatemip(filepath)
+    return [item["publishedName"] for item in data]
+
 def idsfrommips(filepath):
     # return list of IDs from one MIP file
     data = readonemip(filepath)
     return [item["id"] for item in data]
-
-def idsfromdir(directory):
-    # return IDs from directory with files named like <published name>.json or <body ID>.json
-    results = []
-    for filename in os.listdir(directory):
-        path = os.path.join(directory, filename)
-        if path.endswith(".json"):
-            results.extend(idsfrommips(path))
-    return results
 
 def idsfromresults(directory):
     # return IDs from directory with files named like <MIP ID>.json
@@ -41,29 +49,70 @@ def idsfromresults(directory):
             results.append(items[0])
     return results
 
+def checknames(namelist, mipdir):
+    # return (list of names that don't have mips, list of mips that don't have names)
+    mipfiles = os.listdir(mipdir)
+    mipfilenames = set(fn[:-5] for fn in mipfiles if fn.endswith(".json"))
+    nameset = set(namelist)
+    return list(nameset - mipfilenames), list(mipfilenames - nameset)
+
+def reportnamecheck(missingmips, missingnames):
+    return {
+        "missing-mips": missingmips,
+        "missing-names": missingnames,
+    }
+
+def checkonemip(filepath, resultset):
+    fileids = set(idsfrommips(filepath))
+    return list(fileids - resultset)
+
+def checkallmips(names, mipsdir, resultset):
+    results = {}
+    for n in names:
+        path = os.path.join(mipsdir, n + ".json")
+        temp = checkonemip(path, resultset)
+        if temp:
+            results[n] = temp
+    return results
+
+def reportcheckmips(results):
+    count = 0
+    for name in results:
+        count += len(results[name])
+    return {
+        "missing-results": results,
+        "missing-results-count": count,
+    }
 
 
 def main():
-    if len(sys.argv) < 3:
-        print("usage: find-missing-results.py <directory of individual mips> <final results directory>")
+    if len(sys.argv) < 4:
+        print("usage: find-missing-results.py <aggregate mip file> <directory of individual mips> <final results directory> [verbose]")
         sys.exit(0)
 
-    mipsdir = sys.argv[1]
-    resultsdir = sys.argv[2]
+    aggmipspath = sys.argv[1]
+    mipsdir = sys.argv[2]
+    resultsdir = sys.argv[3]
 
-    dirIDlist = idsfromdir(mipsdir)
-    dirIDset = set(dirIDlist)
+    report = {
+        "aggregate-mips-path": os.path.abspath(aggmipspath),
+        "individual-mips-dir": os.path.abspath(mipsdir),
+        "results-dir": os.path.abspath(resultsdir),
+    }
 
-    resultsIDlist = idsfromresults(resultsdir)
-    resultsIDset = set(resultsIDlist)
+    # find names in agg file that don't have individual mips files, and v.v.
+    names = namesfrommip(aggmipspath)
+    missingmips, missingnames = checknames(names, mipsdir)
+    report.update(reportnamecheck(missingmips, missingnames))
 
-    if dirIDset == resultsIDset:
-        print("results found for all MIPs")
-    else:
-        if len(dirIDset - resultsIDset) > 0:
-            print(f"{len(dirIDset - resultsIDset)} MIPs do not have results")
-        if len(resultsIDset - dirIDset) > 0:
-            print(f"{len(resultsIDset - dirIDset)} results files do not have MIPs")
+    # of the names in agg file, check that each mip in each file has a result
+    # (the inverse doesn't make sense; results will have both sg4 and mcfo
+    #   mixed, so will always miss some)
+    resultids = set(idsfromresults(resultsdir))
+    missingdict = checkallmips(names, mipsdir, resultids)
+    report.update(reportcheckmips(missingdict))
+
+    print(json.dumps(report, indent=2))
 
 
 # script start
