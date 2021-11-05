@@ -404,7 +404,7 @@ This step basically reverses step 3 (masks <--> libraries). Note:
 
     
 
-### Perform reverse gradient scroing
+### Perform reverse gradient scoring
 
 **Run:**
 - on imagecatcher
@@ -463,6 +463,22 @@ Sometimes the final match json files are missing fields. For example, if the sea
 
 
 
+## Step 5.75: populate missing search results
+
+(Yes, the step numbers are all screwed up.)
+
+Some MIPs will not have any matches. For example, an image might be too dim or too dense. Or LM expression may be occurring only in regions not imaged in EM (eg, the hemibrain didn't image the optic lobes or the area near the VNC). In this case, there will be no results file at all, as the distributed search process only knows how to write results. It doesn't check later for lack of results.
+
+- use `util/find-missing-results.py` to check for this
+- run (script to be written) to add empty search results for MIPs that had no matches
+    + these are json files containing litereally only `[ ]`
+- the website is responsible for displaying the appropriate messages for am empty search that we did run vs. a MIP ID that doesn't exist that we never ran (eg, if the user edited the ID in the results URL)
+
+
+
+
+(more coming...)
+
 
 
 
@@ -485,14 +501,7 @@ This step uploads the data to the AWS cloud. There are several goups of files to
 - create/edit `working/DATA_VERSION` with the new verison
 - in the https://github.com/JaneliaSciComp/colormipsearch repository, edit `DATA_NOTES.md` with details of what's included and what's changed
     + copy that file to `working/DATA_NOTES.md`
-- `working/publishedNames.txt`: create this file with the following code fragment:
-``` cd working
-    find mips \
-        -type f \
-        -name "*.json" \
-        -printf "%f\n" | sed s/.json// | sort -u > publishedNames.txt
-```
-    + note: this will catch the names of the three .json files at the top level of `mips/`; edit the file and delete by hand (easier than writing a script to do it!)
+- **NOTE**: `publishedNames.txt` is not used anymore!  we have a Dynamo db on AWS handling that now
 - create/edit `working/paths.json` file
     + make sure the buckets are right for the site you're uploading data for
     + consider not updating the "precomputedDataRootPath" immediately; this controls which data version of those available is used by the website, and you probably want to do this last and separately, after you're sure all other uploads are done
