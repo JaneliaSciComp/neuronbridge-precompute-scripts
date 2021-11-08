@@ -31,9 +31,9 @@ def readaggregatemip(filepath):
     return json.loads(open(filepath, 'rt').read())
 
 def namesfrommip(filepath):
-    # get published names from an aggregate MIP
+    # get published names and libraries from an aggregate MIP
     data = readaggregatemip(filepath)
-    return [item["publishedName"] for item in data]
+    return {item["publishedName"]: item["libraryName"] for item in data}
 
 def idsfrommips(filepath):
     # return list of IDs from one MIP file
@@ -75,13 +75,16 @@ def checkallmips(names, mipsdir, resultset):
             results[n] = temp
     return results
 
-def reportcheckmips(results):
+def reportcheckmips(results, namelib):
     count = 0
+    missinglibs = {}
     for name in results:
         count += len(results[name])
+        missinglibs[name] = namelib[name]
     return {
         "missing-results": results,
         "missing-results-count": count,
+        "missing-results-libraries": missinglibs,
     }
 
 
@@ -101,7 +104,8 @@ def main():
     }
 
     # find names in agg file that don't have individual mips files, and v.v.
-    names = namesfrommip(aggmipspath)
+    namelib = namesfrommip(aggmipspath)
+    names = list(namelib.keys())
     missingmips, missingnames = checknames(names, mipsdir)
     report.update(reportnamecheck(missingmips, missingnames))
 
@@ -110,7 +114,7 @@ def main():
     #   mixed, so will always miss some)
     resultids = set(idsfromresults(resultsdir))
     missingdict = checkallmips(names, mipsdir, resultids)
-    report.update(reportcheckmips(missingdict))
+    report.update(reportcheckmips(missingdict, namelib))
 
     print(json.dumps(report, indent=2))
 

@@ -4,9 +4,22 @@
 sometimes mips just don't have matches; the distributed search process does
 not create empty json files for them, so we need to do it as a separate script
 
-input file can be either:
-- plain text file with MIP IDs, one per line
-- output json file from find-missing-results.py script
+note that the empty results files contain some metadata about the mask, too; looks like;
+    {
+      "maskId" : "2711776302980923403",
+      "maskPublishedName" : "LH2454",
+      "maskLibraryName" : "FlyLight Split-GAL4 Drivers",
+      "maskSampleRef" : null,
+      "maskRelatedImageRefId" : null,
+      "maskImageURL" : null,
+      "results" : [ 
+        (this will be empty)
+      ]
+    }
+
+
+
+input file must be the output json file from find-missing-results.py script
 
 the other input parameter is the directory into which to write the files; this
     is typically the appropriate cdsresults.final/ subdirectory
@@ -22,38 +35,26 @@ import sys
 
 
 
-def readinputfile(path):
-    # returns list of IDs as string
+def writeresults(missing, resultsdir):
 
-    # could be json or plain text:
-    try:
-        # assumes output format from find-missing-results.py
-        data = readinputjson(path)
-        missing = data["missing-results"]
-        IDs = []
-        for name in missing:
-            IDs.extend(missing[name])
+    missingIDs = missing["missing-results"]
+    libs = missing["missing-results-libraries"]
 
-    except json.JSONDecodeError:
-        data = readinputtext(path)
-        IDs = [line.strip() for line in data]
-
-    return IDs
-
-
-def readinputjson(path):
-    return json.loads(open(path, 'rt').read())
-
-def readinputtext(path):
-    return open(path, 'rt').readlines()
-
-def writeresults(missingIDs, resultsdir):
-
-    # not going to bother with the json module for this:
-    for ID in missingIDs:
-        path = os.path.join(resultsdir, ID + ".json")
-        with open(path, 'wt') as f:
-            f.write("[ ]\n")
+    for name in missingIDs:
+        library = libs[name]
+        for mipID in missingIDs[name]:
+            searchresult = {
+                "maskId": mipID,
+                "maskPublishedName": name,
+                "maskLibraryName": library,
+                "maskSampleRef": None,
+                "maskRelatedImageRefId": None,
+                "maskImageURL": None,
+                "results" : [ ]
+                }
+            path = os.path.join(resultsdir, mipID + ".json")
+            with open(path, 'wt') as f:
+                json.dump(searchresult, f)
 
 
 def main():
@@ -72,8 +73,8 @@ def main():
         print(f"{resultsdir} does not exist")
         sys.exit(1)
 
-    missingIDs = readinputfile(inputpath)
-    writeresults(missingIDs, resultsdir)
+    missing = json.loads(open(inputpath, 'rt').read())
+    writeresults(missing, resultsdir)
 
 
 # script start
