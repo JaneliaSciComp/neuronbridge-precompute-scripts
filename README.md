@@ -16,12 +16,20 @@ This repository is meant to record Janelia-specific operational knowledge and re
 
 ## Note on EM datasets: hemibrain vs. VNC
 
-colormipsearch and colormipsearch-scripts were initially developed to run color depth searches for LM images against the hemibrain EM dataset (and vice versa). It was later extended to handle the VNC EM dataset as well. 
+colormipsearch and colormipsearch-scripts were initially developed to run color depth searches for LM images against the hemibrain EM dataset (and vice versa). It can be used for VNC as well, but hasn't been as yet.
 
-In general, everything should be very similar. There is a corresponding global parameter files beginning with "vnc-", and all the script step subdirectories are duplicated with "vnc-" prefixes (the script within have the same names, for consistency). The output will be segregated into a "vnc/" subdirectoy. In an ideal world, we'd go back and rename everything so there is a "hemibrain/" directory as well, but for now, any data in the main directory will be hemibrain data.
+In general, to do so, everything would be very similar. You could either (a) duplicate all the scripts and files with (say) a prefix of "vnc-" and run it in parallel. Hemibrain data is stored in a "brain" subdir, and you'd want to segregate the vnc in a "vnc" subdirectory.
+
+Alternately, you could just use the same scripts and plug in all the vnc-relevant values, as everything applies. This would be messier, as you wouldn't be able to do two calculations at the same time on the same branch in the same repo. However, it would be easily handled by just having a separate branch for each calculation. If anything useful was produced in terms of code changes, it could then be merged back to main.
 
 This is due for a better refactor in the future.
 
+
+## Note on LM datasets:
+
+These scripts were initially written to handle two varieties of LM data, split gal4 and gen1 mcfo. I wrote a version of each script for each dataset. With the addition of the annotator gen1 mcfo dataset, it gets more complicated. Ideally, in hindsight, one would prefer a single LM script to which one would input the parameters, but in practice, it's going to take some manual labor each time in determining which pairs of mips need to be searched against one another, and later, which sets of results should be merged before upload.
+
+For now, I'm going to create a parallel set of scripts and env variables for annotator gen1 mcfo. If we need even more datasets later...maybe time to refactor.
 
 
 # Directory structure
