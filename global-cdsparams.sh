@@ -5,7 +5,7 @@
 
 # locations
 # the working directory that will hold *everything*:
-export TOP_DIR=/nrs/neuronbridge/v2.3.0
+export TOP_DIR=/nrs/neuronbridge/v-test-djo
 export WORKING_DIR=${TOP_DIR}/brain/
 
 # code locations
@@ -52,7 +52,9 @@ export SG4_COUNT=6874
 # directory and filenames:
 
 # JACS service
-JACSV2URL='https://workstation.int.janelia.org/SCSW/JACS2SyncServices/v2'
+# first one is the gateway, uses https; second is direct, doesn't; I've been having SSL issues
+# JACSV2URL='https://workstation.int.janelia.org/SCSW/JACS2SyncServices/v2'
+JACSV2URL='http://jacs2.int.janelia.org:9190/api/rest-v2'
 
 
 # directories within WORKING_DIR:
