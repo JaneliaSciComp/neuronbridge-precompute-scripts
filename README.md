@@ -29,7 +29,7 @@ This is due for a better refactor in the future.
 
 These scripts were initially written to handle two varieties of LM data, split gal4 and gen1 mcfo. I wrote a version of each script for each dataset. With the addition of the annotator gen1 mcfo dataset, it gets more complicated. Ideally, in hindsight, one would prefer a single LM script to which one would input the parameters, but in practice, it's going to take some manual labor each time in determining which pairs of mips need to be searched against one another, and later, which sets of results should be merged before upload.
 
-For now, I'm going to create a parallel set of scripts and env variables for annotator gen1 mcfo. If we need even more datasets later...maybe time to refactor.
+For the annotator gen1 mcfo dataset, most of the processing was not run using these scripts. `global-parameters.sh` has been updated to add some variable, and the step 5 merge scripts were updated.
 
 
 # Directory structure
@@ -106,9 +106,14 @@ The intention was that the user would edit various cdparams files as the workflo
     + subfolder = library, eg "flyem_hemibrain_1_2_1"
     + subsubfolder = alignment space, eg "JRC2018_Unisex_20x_HR"
     + subsubsubfolder = variants
-- first, the library needs to exist in the config server http://config.int.janelia.org/config/cdm_library
+- the library needs to exist in the config server http://config.int.janelia.org/config/cdm_library
+    + if it does (if you're adding to existing library), skip to the next step
+    + colormipsearch only cares about the "name" field; it should be set and present when the json input for the searches is run, and the "libraryName" field is populated from the config server "name" field
+        * I'm 95% sure it's not needed during the library load phase...
+        * ...but no harm in doing it early just in case
     + API is here: https://github.com/JaneliaSciComp/Centralized_Config
-    + Rob Svirskas can do this
+    + Rob Svirskas can do this (and probably should; we care about only that one field, and he cares about all of them, might want to insert other fields at the same time)
+    + this applies to LM and EM libraries
 - libraries are stored on disk: /nrs/jacs/jacsData/filestore/system/ColorDepthMIPs/
     + again, subdir = alignment space
 - create a subdirectory in the appropate alignment space with the library's identifier
@@ -140,9 +145,11 @@ The intention was that the user would edit various cdparams files as the workflo
     + use the tool in the jar; do not do this by hand!  filenames need to be adjusted
     + there are two versions of step 1 scripts: one that operates from zip files, one from libraries; for this procedure, want the one with the zips
     + run it to create an aggregate json file where the variants point to the zip files
-        * note that this will work for the searches!  however, it can't be used for image uploads, as that needs actual files on the file system
+        * ie, run step1/xxxx-input-json-zips.sh script, after editing
+        * note that you can run the searches from this json file (with the zips)!  however, it can't be used for image uploads, as that needs actual files on the file system
+        * running time: ???
     + now you can run `util/copy-variants-xxx.sh` scripts (xxx = sg4 or mcfo); edit with the just-created json file path
-    + expected running time: few minutes
+        * expected running time: few minutes
 - synchronization process:
     + if you wait for it to run automatically, can take up to a day or so (based on a few observation)
     + or you can start it manually via the REST API:
@@ -471,23 +478,31 @@ Sometimes the final match json files are missing fields. For example, if the sea
 
 
 
-## Step 5.75: populate missing search results
+## Step 5.75: check for and populate missing search results
 
-(Yes, the step numbers are all screwed up.)
+### check for missing match files
 
 Some MIPs will not have any matches. For example, an image might be too dim or too dense. Or LM expression may be occurring only in regions not imaged in EM (eg, the hemibrain didn't image the optic lobes or the area near the VNC). In this case, there will be no results file at all, as the distributed search process only knows how to write results. It doesn't check later for lack of results.
 
-- use `util/find-missing-results.py` to check for this
-- run (script to be written) to add empty search results for MIPs that had no matches
-    + these are json files containing litereally only `[ ]`
-- the website is responsible for displaying the appropriate messages for am empty search that we did run vs. a MIP ID that doesn't exist that we never ran (eg, if the user edited the ID in the results URL)
+Note that we should fix this in the future so appropriate empty files are created by the search tool earlier on. There is a ticket for this.
+
+- for each dataset:
+- run `util/find-missing-results.py`
+    + input is the aggregate MIPs file, the directory of individual MIPs files, and the match files directory
+        * use the `cdsresults.ga` directory rather than the `cdsresults.final` directory; the `.ga` directories may be merged multiple times later, so you want them to be correct
+    + you should capture the screen output, which is in json format, to a file
+    + that json contains all the lines and MIPs that have inconsistencies
+    + see the script header for format of the output
 
 
+### populate missing match files
 
+For any MIPs that don't have match files, we need to provide an empty match file so the website can display the appropriate messages for am empty search that we did run vs. a MIP ID that doesn't exist that we never ran (eg, if the user edited the ID in the results URL).
 
-(more coming...)
+- run `util/populate-missing-results.py` with the json file from the previous step as input 
+- should be output again to the `.ga` directory, so it can be merged properly at any time in the future
 
-
+Typically once the matches are uploaded to a dev site, the MIPs with missing matches will be examined to be sure they are legitimate. 
 
 
 

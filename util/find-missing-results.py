@@ -11,6 +11,22 @@ compare mips and final results directories to verify all MIPs have results
 output is printed to screen as json so you can, eg, read it into a tool 
 that corrects any of these problems
 
+output json has the following keys:
+    'aggregate-mips-path': 
+    'individual-mips-dir': 
+    'results-dir': 
+        - these are the input parameters
+    'missing-mips': 
+        - list of MIPs files that don't have lines in aggregate file
+    'missing-names': 
+        - list of line names in aggregate file that don't have individual MIPs files
+    'missing-results': 
+        - dict: {"line name": [list of MIPs IDs without match files]}
+    'missing-results-count': 
+        - total count of MIPs IDs without match files
+    'missing-results-libraries': 
+        - dict: {"line name": "library"}
+
 usage: find-missing-results.py <aggregate mip file> <directory of individual mips> <final results directory>
 
 """
