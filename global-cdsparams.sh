@@ -5,7 +5,7 @@
 
 # locations
 # the working directory that will hold *everything*:
-export TOP_DIR=/nrs/neuronbridge/v-test-djo
+export TOP_DIR=/nrs/neuronbridge/v2.4.0
 export WORKING_DIR=${TOP_DIR}/brain/
 
 # code locations
@@ -69,8 +69,10 @@ MCFO_DIR="gen1_mcfo_lines"
 
 # input json files (.json suffix will be added)
 EM_INPUT="hemibrain1.2.1"
+EM_INPUT_ALT="hemibrain_1_2_1"
 SG4_INPUT="split_gal4"
 MCFO_INPUT="mcfo"
+ANN_MCFO_INPUT="annotator_gen1_mcfo_brain"
 
 # search output directory
 CDSMATCHES_SUBDIR=cdsresults.matches
