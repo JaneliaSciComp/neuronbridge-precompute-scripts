@@ -11,12 +11,11 @@
 
 source "$(dirname ${BASH_SOURCE[0]})/../global-cdsparams.sh"
 
-
 java ${JAVA_OPTS} \
     -jar ${CDS_JAR} \
     replaceAttributes \
-    -attrs ${MIPS_DIR}/${SG4_INPUT}.json \
-    --input-dirs ${CDGAS_RESULTS_DIR}/${EM_INPUT}-vs-${SG4_INPUT} \
+    -attrs ${MIPS_DIR}/all-lm-mips+imageStack.json \
     --id-field id  \
-    --fields-toUpdate imageURL thumbnailURL searchablePNG \
-    -od ${CDGAS_RESULTS_DIR}/${EM_INPUT}-vs-${SG4_INPUT}-updated
+    --fields-toUpdate imageStack \
+    --input-dirs ${CDS_FINAL_DIR}/flyem-vs-flylight \
+    -od ${CDS_FINAL_DIR}/flyem-vs-flylight+imageStack
