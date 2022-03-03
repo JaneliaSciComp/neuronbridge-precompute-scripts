@@ -455,7 +455,7 @@ This step basically reverses step 3 (masks <--> libraries). Note:
 - `step5/merge-em.sh`
 
 **Expected output:**
-- running time: ~35 minutes for both
+- running time: as of v2.4.0, 75m for LM, 
 - files created:
 ```
     working/cdsresults.final
@@ -484,12 +484,10 @@ Sometimes the final match json files are missing fields. For example, if the sea
 
 Some MIPs will not have any matches. For example, an image might be too dim or too dense. Or LM expression may be occurring only in regions not imaged in EM (eg, the hemibrain didn't image the optic lobes or the area near the VNC). In this case, there will be no results file at all, as the distributed search process only knows how to write results. It doesn't check later for lack of results.
 
-Note that we should fix this in the future so appropriate empty files are created by the search tool earlier on. There is a ticket for this.
 
 - for each dataset:
 - run `util/find-missing-results.py`
-    + input is the aggregate MIPs file, the directory of individual MIPs files, and the match files directory
-        * use the `cdsresults.ga` directory rather than the `cdsresults.final` directory; the `.ga` directories may be merged multiple times later, so you want them to be correct
+    + input is the aggregate MIPs file, the directory of individual MIPs files, and the final match files directory
     + you should capture the screen output, which is in json format, to a file
     + that json contains all the lines and MIPs that have inconsistencies
     + see the script header for format of the output
@@ -500,10 +498,15 @@ Note that we should fix this in the future so appropriate empty files are create
 For any MIPs that don't have match files, we need to provide an empty match file so the website can display the appropriate messages for am empty search that we did run vs. a MIP ID that doesn't exist that we never ran (eg, if the user edited the ID in the results URL).
 
 - run `util/populate-missing-results.py` with the json file from the previous step as input 
-- should be output again to the `.ga` directory, so it can be merged properly at any time in the future
 
 Typically once the matches are uploaded to a dev site, the MIPs with missing matches will be examined to be sure they are legitimate. 
 
+
+### future improvement
+
+Note that we should fix this in the future so appropriate empty files are created by the search tool earlier on. There is a ticket for this.
+
+The merge step also needs to write empty files. Not sure if the reverse search also has the same problem?
 
 
 ## Step 6: Normalize
