@@ -53,6 +53,10 @@ EXEC_CMD=echo
 #     ${TOP_DIR}/schemas \
 #     ${UPLOAD_BUCKET}/${VERSION_FOLDER}/schemas --recursive
 
+# PPP results
+# $EXEC_CMD aws s3 cp \
+#     ${WORKING_DIR}/pppresults/flyem-to-flylight.public \
+#     ${UPLOAD_BUCKET}/${VERSION_FOLDER}/metadata/pppresults --recursive
 
 # # do last; updating this file switchs to new results
 # $EXEC_CMD aws s3 cp \
