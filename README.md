@@ -1,17 +1,21 @@
 # colormipsearch-scripts
 
-This repo contains scripts for running distributed color MIP mask searches as implemented in https://github.com/JaneliaSciComp/colormipsearch.
+This repo contains scripts for running distributed color MIP mask searches as implemented in https://github.com/JaneliaSciComp/colormipsearch and utility scripts for related tasks. 
 
 This repository is meant to record Janelia-specific operational knowledge and record how data for NeuronBridge was actually run. As such, it is:
 
 - private; appropriate for Janelia only
 - assumes/imposes a specific directory structure
-- comprehensive; every detail except authentication secrets should appear in this repo
-    + so no secret auxiliary scripts that fix things "just this once"; if you need to do something, include the script
-    + changeable details should be isolated and centralized, however
+- (fairly) comprehensive; every detail except authentication secrets should appear in this repo
+    + so no secret auxiliary scripts that fix things "just this once"; if you need to do something, include the script in the repo somewhere
 - historical; use tags and/or branches as needed so what was actually run can be frozen while allowing future runs to have different details
 
-**NOTE** This is a work in progress. The step ordering and numbering is particularly confusing right now.
+**NOTE** These docs are a work in progress. Frankly, we change procedures and add features with nearly every data release, and the documentation isn't keeping up.
+
+
+## Note on running searches from scratch vs. adjusting old searches
+
+As we add new features to the website, we often need to add information to old searches, in cases where we're adding metadata and the searches themselves don't need to be rerun. See section "Splicing attributes" for details of that procedure.
 
 
 ## Note on EM datasets: hemibrain vs. VNC
@@ -29,24 +33,57 @@ This is due for a better refactor in the future.
 
 These scripts were initially written to handle two varieties of LM data, split gal4 and gen1 mcfo. I wrote a version of each script for each dataset. With the addition of the annotator gen1 mcfo dataset, it gets more complicated. Ideally, in hindsight, one would prefer a single LM script to which one would input the parameters, but in practice, it's going to take some manual labor each time in determining which pairs of mips need to be searched against one another, and later, which sets of results should be merged before upload.
 
-For the annotator gen1 mcfo dataset, most of the processing was not run using these scripts. `global-parameters.sh` has been updated to add some variable, and the step 5 merge scripts were updated.
+For the annotator gen1 mcfo dataset, most of the processing was not run using these scripts. `global-parameters.sh` has been updated to add some variables, and the step 5 merge scripts were updated.
+
+
+## Note on datasets: incremental updates
+
+These scripts were written assuming that datasets would be all run together. In the future, we really need a way to do incremental updates. Changes needed:
+
+- figure out how to determine which searches need to be done
+    + in the past, it's been entire libraries in JACS db
+    + in the future, we anticipate it will be a subset specified in some other way
+        * possibly we can use the `publishedImage` collection in the JACS db
+- file and directory naming conventions need rethinking; if we add some MCFO lines, then existing MCFO directories are no longer comprehensive; plus, new lines need good naming convention, too
+- need to track which new directories get merged to which existing directories
+    + probably the `.ga` directories ought to be all merged each time in to `.final`
+    + but we need to be sure the merge tool can handle ever-increasing file sizes, and/or impose proper limits on how many search results we want to present online
+
 
 
 # Directory structure
 
-All the computed data as well as the running code and scripts will be kept in one working directory.
+All the computed data as well as the running code and scripts will be kept in one working directory. Usually that working directory is `/nrs/neuronbridge/v1.2.3`, where v1.2.3 is the current data version number (ie, the version of the precomputed search data, not to be confused with the website code version, or the project version).
+
+This listing is reordered and commented.
 
 ```
 workingdir/
+    # config and current are website version config files
+    config.json  
+    current.txt  
+    # release notes, copied from colormipsearch repo
+    DATA_NOTES.md
+    # repo for actual searches; Java, mostly by Cristian
     colormipsearch/
         target/ jar file
         src/stuff/scripts
+    # this repo
     colormipsearch-scripts/
         step directories/
         parameter files
         util/
-    mips/
-    (other output directories)
+    # schemas for the json we upload
+    schemas/
+    brain/  
+        # MIPs metadata files, both for processing and for upload;
+        mips/  
+        # pseudo-MIPs metadata files generated from PPP results
+        pppresults/
+        # three stages of precomputed search output
+        cdsresults.matches/  
+        cdsresults.ga/  
+        cdsresults.final/  
 
 ```
 
@@ -54,8 +91,8 @@ workingdir/
 # Setup, prerequisites, general notes
 
 Prerequisites:
-- color depth MIPs must be uploaded to the workstation (see section below)
-- images should be uploaded to S3 by Rob (see below)
+- color depth MIPs must be uploaded to the workstation (see "Loading color depth MIPs into JACS libraries" below)
+- images should be uploaded to S3 by Rob (see "Uploading images to S3" below)
 - user needs JACS auth
     + see https://wiki.int.janelia.org/wiki/display/JW/Authentication+Service
     + you will need to obtain a token and have it available in the JACSTOKEN environment variable for some steps
@@ -71,7 +108,6 @@ Prerequisites:
 
 Setup:
 - determine the data version of the release
-    + this is not strictly necessary until step 7, but it makes sense to use it in directory names etc., so better to do it now
     + if there are any changes to the json output that will break the current website, increment the major version
     + otherwise, increment the minor version or patch level as appropriate
 - create your working directory and clone two repos into it
@@ -166,23 +202,18 @@ The intention was that the user would edit various cdparams files as the workflo
 
 This is a confusing step!  Be careful.
 
-- Rob Svirskas uploads images to S3; when he does, he populates two fields in the MIPs collection containing their URLs
+- Rob Svirskas uploads images to S3; when he does, he stores those URLs in various fields in multiple collections in the JACS Mongo db 
 - the individual json files will only populate imageURL field from the database; if they have that field, the image is uploaded
 - however, the aggregate json file will populate the imageURL field with the URL it would or should have, whether it's been uploaded or not
 - this aggreate json file is also the one Rob uses for input
     + he wants only the images that need uploading, though, not all of them (ie, just the updates)
 - so the order of operation is something like this:
-    + after the library has been created, run step 1 normally to create the aggregate json
-    + also run step 0 to create the individual json files
+    + after the library has been created, run step 1 to create the aggregate json
     + run `util/filter-json-for-upload.py`; this script looks at the individual json files to determine which ones are missing imageURL and thus need uploading; it then filters the aggregate json and removes those that do have images
 - the filtered json file can then be copied to `/groups/scicompsoft/informatics/data/release_libraries/v2.2.0` (with the right version number) for upload; try to name the file with the driver (split gal4, mcfo, whatever), the date, and the brain dataset (eg, hemibrain or vnc)
 - let Rob know it's ready
 
-Once Rob has done the upload and populated the db, it's time to start the workflow proper. 
-
-Note that you'll be running at least step 0 again, so the imageURL field will be populated. I'm not 100% sure you need to re-run step 1, but I suspect it's a good idea, just in case. If the imageURL fields have changed at all, it'll pick up the current ones.
-
-
+Once Rob has done the upload and populated the db, it's time to start the workflow proper. You'll run step 0 and step 1 (again) at that time. Step 1 needs to be rerun so any new attributes will be picked up.
 
 
 # Running the workflow - general
@@ -218,13 +249,17 @@ Steps 2, 3, and 4 can and often should be run on the cluster. In the parameters 
 - in the global parameters file, check that `CLUSTER_PROJECT_CODE` is set to the proper current project code for cluster billing
 - set `RUN_CMD="gridRun"`
 - look over the computer resource section; you may need to adjust memory and number of cores available to match the cluster nodes rather than the SciComp servers
-- look over the "job partitioning" section; you may want to adjust how the jobs are batched up; the default parameters assume you're running on one SciComp server, and you may benefit from more jobs/batches when running on the cluster
+- look over the "job partitioning" section; you _will_ want to adjust how the jobs are batched up! performance varies _dramatically_ based on batching
+    + the default parameters assume you're running on one SciComp server, and you may benefit from more jobs/batches when running on the cluster
     + in particular, since split gal 4 datasets are smaller, they are often run in one job on SciComp servers; you should run several on the cluster
     + MCFO jobs, though, are already batched into typically hundreds of jobs, so you probably don't need to adjust for the cluster
 
 
-
 # Running the workflow - individual steps
+
+These steps are documented as if you are running all split gal4 and MCFO from scratch. If you are adding a new LM dataset, for example, you need not run the old LM script, and you need not regenerate any of the EM MIPs metadata files.
+
+These docs pre-date the Annotator Gen1 MCFO dataset! That dataset is at least as big as all the existing data, and all running times are at least double if that dataset is included.
 
 ## Step 0: generate MIPs metadata
 
@@ -280,25 +315,6 @@ Steps 2, 3, and 4 can and often should be run on the cluster. In the parameters 
 - optional: run `util/find-mip-mismatches.py <mips dir> <aggregate mips file>`; expected output is `ID sets match`
     + there will likely be many duplicates; this is fine, as (eg) multiple channels will count as duplicates
     + however, there should be no IDs in the directory that are not in the aggregate file; if that happens, it will cause problems later; the website will show images in the initial line/body ID search that will not have search results
-
-
-## Step 1.5: Rob uploads images to S3
-
-Rob Svirskas will upload images to S3 and post their URLs to JACS.
-
-- in `/groups/scicompsoft/informatics/data/release_libraries`, create subdir with data version name if it doesn't exist
-- copy aggregate json files from step 1 to that new dir and let Rob know
-- "imageURL" and "thumbnailURL" attributes will be empty before Rob gets them into JACS
-- so we'll have to repeat step 0 and 1 so those fields will be populated
-    + in fact, since they don't depend on each other, could do step 1, have Rob do uploads, then repeat 1 and do 0 for the first time
-    + still working this out! there is undoubtedly a better way to do this
-- once populated, those fields ought to be carried along to the end results json files
-
-If it's not the first time for this dataset (eg, if it's a re-run), then many or most images will have already been uploaded. There's a script to filter the json file so it only contains the MIPs missing the "imageURL" field: 
-
-`usage: util/filter-json-for-upload.py inputjsonpath outputjsonpath`
-
-Move that output file to the path noted above, and probably rename it with a date, and tell Rob.
 
 
 ## Step 2: Compute color depth matches
@@ -405,19 +421,16 @@ For this step, masks = EM, libraries = LM. Output is only produced for this comb
 
 ## Step 4: Compute reverse gradient scores
 
-This step basically reverses step 3 (masks <--> libraries). Note:
+This step basically reverses step 3 (masks <--> libraries). 
 
-- it shares the job partitioning from step 3; no user parameters to update
-    + although you can if you need to; copy the appropriate variables from the step 3 parameters file into the step 4 file and change them there
-
---> that is entirely wrong; the number of jobs differs because we're doing the opposite direction; need to update these docs re: how to get right number of files!
-
-
-
-- needs to be run on high memory machine; the computer-related parameters _are_ different for step 4
+- needs to be run on high memory machine; the computer-related parameters (number CPUs, memory) _are_ different for step 4
 - in the parameter file, it's still masks = EM, libraries = LM, even though we're really doing the reverse
 
-    
+This time you're counting the LM output files from step 2. Edit `step3/cdsparams-em-sg4.sh` with the results of these commands:
+- `source global-cdsparams.sh`
+- count number of results files: `ls ${CDSMATCHES_RESULTS_DIR}/${SG4_INPUT}-vs-${EM_INPUT} | wc`
+
+Repeat for MCFO.
 
 ### Perform reverse gradient scoring
 
@@ -448,6 +461,10 @@ This step basically reverses step 3 (masks <--> libraries). Note:
 
 ## Step 5: Merge results
 
+If you need to splice attributes, you might want to do it now, before merging.
+
+Note that merging is more difficult now that we have several datasets that we've calculated at various times. Consult the wiki (https://wiki.int.janelia.org/wiki/display/ScientificComputing/NeuronBridge+data+versions) for the location of previous data version output. Edit the merge scripts so all the relevant datasets are properly merged.
+
 **Run:**
 - on any computer
 - from anywhere, any order, etc.
@@ -467,23 +484,12 @@ This step basically reverses step 3 (masks <--> libraries). Note:
 ```
 
 
-## Step 5.5: Update fields
 
-Sometimes the final match json files are missing fields. For example, if the searches are run before the images are uploaded to S3, the imageURL field in the match json will not be populated. Rerunning the searches would be computationally expensive, so we need to update the matches to include the fields.
-
-
-
-**in progress**
-
-
-
-
-## Step 5.75: check for and populate missing search results
+## Step 5.5: check for and populate missing search results
 
 ### check for missing match files
 
-Some MIPs will not have any matches. For example, an image might be too dim or too dense. Or LM expression may be occurring only in regions not imaged in EM (eg, the hemibrain didn't image the optic lobes or the area near the VNC). In this case, there will be no results file at all, as the distributed search process only knows how to write results. It doesn't check later for lack of results.
-
+Some MIPs will not have any matches. For example, an image might be too dim or too dense. Or LM expression may be occurring only in regions not imaged in EM (eg, the hemibrain didn't image the optic lobes or the area near the VNC). In this case, there will be no results file at all, as the distributed search process only knows how to write results. It doesn't check later for lack of results. 
 
 - for each dataset:
 - run `util/find-missing-results.py`
@@ -511,7 +517,7 @@ The merge step also needs to write empty files. Not sure if the reverse search a
 
 ## Step 6: Normalize
 
-This step seems not to be needed any more.
+This step is mentioned in the colormipsearch repo, but it is not needed any more.
 
 
 ## Step 7: AWS upload
@@ -519,24 +525,24 @@ This step seems not to be needed any more.
 This step uploads the data to the AWS cloud. There are several goups of files to be uploaded, and they need not be done all at the same time. The `util/upload.sh` script has all the commands, and they can be commented out/in as needed to do whichever part of the upload you want. 
 
 **Preparation:**
-- determine the data version of the release if you haven't already; see notes in "Setup, prerequisites, general notes" section at top
 - edit `util/upload.sh` 
     + set correct upload bucket for the website you're uploading data for
+        * eg, dev, val, or prod
     + set version folder name based on data version
-    + at this point you can begin uploading MIPs and results
-- create/edit `working/DATA_VERSION` with the new verison
+- edit `working/config.json` if needed (probably won't be; contains bucket info, usually edited as part of deployment)
+    + likewise `working/current.txt`
+    + do _not_ upload these files unless you are doing final deployment
 - in the https://github.com/JaneliaSciComp/colormipsearch repository, edit `DATA_NOTES.md` with details of what's included and what's changed
     + copy that file to `working/DATA_NOTES.md`
-- **NOTE**: `publishedNames.txt` is not used anymore!  we have a Dynamo db on AWS handling that now
-- create/edit `working/paths.json` file
-    + make sure the buckets are right for the site you're uploading data for
-    + consider not updating the "precomputedDataRootPath" immediately; this controls which data version of those available is used by the website, and you probably want to do this last and separately, after you're sure all other uploads are done
+    + **NOTE**: `publishedNames.txt` is not used anymore!  we have a Dynamo db on AWS handling that now
+- schemas: if the form of any of the uploaded json files has changed (MIPs metadata or search results), schemas should be regenerated and uploaded
+    + use `util/generate-schemas.sh`, or run the jar directly (it's a very straightforward command)
 - remove previous results: if you want to remove previous results, you can remove S3 objects (including "directories") like this:
     + this example leaves the ppp results in place but removes the rest of the results for v2.2.0:
     + `aws s3 rm s3://janelia-neuronbridge-data-int/v2_2_0/metadata/cdsresults --recursive`
     + `aws s3 rm s3://janelia-neuronbridge-data-int/v2_2_0/metadata/by_body --recursive`
     + `aws s3 rm s3://janelia-neuronbridge-data-int/v2_2_0/metadata/by_line --recursive`
-
+    + generally this isn't needed or desireable, as we usually only upload new results
 
 **Run:**
 - on any computer that has AWS command-line client installed
@@ -549,9 +555,59 @@ This step uploads the data to the AWS cloud. There are several goups of files to
     + usually you will _not_ want to upload the `paths.json` file until you are sure the rest of the upload is correct
 - running time:
     + upload mips: ~10 minutes
-    + upload results: ~30 minutes
+    + upload results: ~1.5h
     + upload misc text files: <1 minute
 
+
+# Splicing Attributes
+
+Sometimes the final match json files are missing fields. For example, if the searches are run before the images are uploaded to S3, the imageURL field in the match json will not be populated. Rerunning the searches would be computationally expensive, so we need to update the matches to include the fields.
+
+The general flow of information is this:
+- information is loaded into the JACS database by some method
+- an aggregate MIPs metadata file is generated (step 1 above) that contains the new attribute
+- one or more scripts is run to copy the new attribute from the aggregate MIPs file onto corresponding entries in the search results files; this may include:
+    + the search results proper (color depth MIPs search)
+    + the top mask section
+    + search results for PPP results (for which we have pseudo-results)
+    + (we don't expect to add attributes to the mask section for PPP, but I suppose it's possible in the future)
+    + each of these splices is done differently
+- the splicing may be done onto the Step 4 (ga) results or the Step 5 (final) results
+    + earlier is better than later, but later tends to be easier
+    + **Note** we have not done this fully consistent, and it's not clear which older results have all the proper results or not!
+
+
+## Splicing attributes onto CDM results
+
+This is the easiest procedure, and it is supported by a tool in the colormipsearch repo. 
+
+- run step 1 to create an aggregate MIPs metadata file for the data in question; this file must contain the new attributes
+- edit `util/update-attributes.sh`
+    + `-attrs` is the source MIPs metadata file
+    + `--input-dirs` is the directory of results to be updated
+    + `-od` is the output directory; best not to overwrite input directory!
+    + `--id-field` is the field in the json files used to correlate the metadata MIPs with the results; this should almost always be `id`
+        * in rare cases where `id` is not unique (eg, for `searchablePNG`), `imageURL` may suffice; determine on case-by-case basis
+    + `fields-toUpdate` is a space-separated list of the attributes to update
+- run it
+- running time: depends on what is being updated; for all LM results, can be 1-2 hours (?)
+
+Be sure to do any file-system cleanup that is needed. Eg, remove old results directory, rename newly spliced results directory, etc.
+
+
+## Splicing attributes onto CDM masks
+
+If we add an attribute that should be available for the mask in CDM results, the procedure is different. The tool in the colormipsearch jar does not work (currently) because:
+- the field to match on is not the same between the source jar and the destination result (usually `id` and `maskId`)
+- the field to update also doesn't match (eg, `imageStack` and `maskImageStack`)
+- `util/one-offs/update-mask-imageStack.py` was used for the `imageStack` case; it will be generalized for wider future use
+
+
+## Splicing attributes onto PPP results
+
+PPP results are unusual in that they are not produced by our software. The results do not use our IDs, so they can't be correlated. As a result, the CDM result tool can't be used.
+
+Instead, we need to retrieve the info another way based on the info that does appear in the results file. For the `imageStack` attribute, that means using the slide code, alignment space, and objective of the result to look up the attribute in the JACS db directly. This was done in a set of three scripts, `util/one-offs/update-ppp-imageStack-[123].py`. These will also probably be generalized for wider future use.
 
 
 
