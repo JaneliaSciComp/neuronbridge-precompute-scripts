@@ -1,8 +1,8 @@
 #!/bin/env python
 """
-we need to do a one-off splicing of the imageStack attribute onto the 
-PPP results; the PPP results don't have MIPs or MIPs metadata files, so 
-we need to grab the data from the database
+we need to splice attributes onto the PPP results; the PPP results 
+don't have MIPs or MIPs metadata files, so we need to grab the data from the database;
+this script does so for attributes in the publishedImage collection in JACS
 
 - we're doing it in multiple scripts, to be run in sequence
 - some things hard-coded
@@ -10,7 +10,9 @@ we need to grab the data from the database
 
 step 3: read the URLs from step 2 and apply to each of the search results files
 
-usage: update-ppp-imageStack-3.py inputURLfile inputresultsdir outputresultsdir
+before running, edit the ATTRIBUTENAME constant with the attribute that will be created/populated
+
+usage: update-ppp-publishedImage-3.py inputURLfile inputresultsdir outputresultsdir
 
 """
 
@@ -23,18 +25,21 @@ import time
 # 3rd party
 import requests
 
+# constants:
+# name of attribute to add to the results json:
+ATTRIBUTENAME = "imageStack"
 
 def rewriteresuls(inputpath, outputpath, URLmap):
     data = json.loads(open(inputpath, 'rt').read())
     for mip in data["results"]:
-        mip["imageStack"] = URLmap[mip["slideCode"], mip["alignmentSpace"], mip["objective"]]
+        mip[ATTRIBUTENAME] = URLmap[mip["slideCode"], mip["alignmentSpace"], mip["objective"]]
     with open(outputpath, 'wt') as f:
         json.dump(data, f, indent=2)
 
 
 def main():
     if len(sys.argv) < 4:
-        print("usage: update-ppp-imageStack-3.py inputURLfile inputresultsdir outputresultsdir")
+        print("usage: update-ppp-publishedImage-3.py inputURLfile inputresultsdir outputresultsdir")
         sys.exit(1)
     inputURLfile = sys.argv[1]
     inputresultsdir = sys.argv[2]
@@ -51,9 +56,6 @@ def main():
         print(f"{outputresultsdir} already exists")
         sys.exit(1)
     os.mkdir(outputresultsdir)
-
-    # going to try this sequential first, as parallelization for the first
-    #   two scripts turned out to be overkill or problematic
 
     # data file is list of [slideCode, alignmentSpace, objective, URL]
     inputdata = json.loads(open(inputURLfile, 'rt').read())

@@ -1,19 +1,42 @@
 #!/bin/env python
 """
-we need to do a one-off splicing of the imageStack attribute onto the mask part
-of search results; the standard replaceAttributes tool can't do this
+we need to splice of attributes onto the mask part of search results; the 
+standard replaceAttributes tool can't do this
+
+to use, edit the constants, then run the scipt
+
+usage: update-mask-attribute.py inputjson inputdir outputdir
 
 
-usage: update-mask-imageStack.py inputjson inputdir outputdir
+revisions:
+- original was hard-coded for "imageStack" attribute
+- generalized for any single attribute, but still need to edit constants in script
+
+future potential improvements:
+- allow update of more than one attribute
+- take attribute mapping as input instead of needing to edit script
 
 """
 
+# imports
 import collections
 import json
 import multiprocessing
 import os
 import sys
 import time
+
+# constants
+
+# user should update these two constants:
+SOURCEATTRIBUTE = "imageStack"
+DESTINATIONATTRIBUTE = "maskImageStack"
+
+# these will likely never change
+SOURCEID = "id"
+DESTINATIONID = "maskId"
+
+
 
 # note that start is inclusive, end is exclusive, like normal Python array indexing
 Batch = collections.namedtuple("Batch", ['inputjson', 'inputdir', 'outputdir', 'start', 'end'])
@@ -22,14 +45,14 @@ def runbatch(batch):
     print(f"batch {batch.start} starting at {time.asctime()}")
     # build {id: imageStack} 
     data = json.loads(open(batch.inputjson, 'rt').read())
-    imageStacks = {mip["id"]: mip["imageStack"] for mip in data if "imageStack" in mip}
+    imageStacks = {mip[SOURCEID]: mip[SOURCEATTRIBUTE] for mip in data if SOURCEATTRIBUTE in mip}
 
     files = os.listdir(batch.inputdir)
     for f in files[batch.start:batch.end]:
         inputpath = os.path.join(batch.inputdir, f)
         data = json.loads(open(inputpath, 'rt').read())
-        if data["maskId"] in imageStacks:
-            data["maskImageStack"] = imageStacks[data["maskId"]]    
+        if data[DESTINATIONID] in imageStacks:
+            data[DESTINATIONATTRIBUTE] = imageStacks[data[DESTINATIONID]]    
         outputpath = os.path.join(batch.outputdir, f)
         with open(outputpath, 'wt') as f:
             json.dump(data, f, indent=2)
@@ -38,7 +61,7 @@ def runbatch(batch):
 
 def main():
     if len(sys.argv) < 4:
-        print("usage: update-mask-imageStack.py inputjson inputdir outputdir")
+        print("usage: update-mask-attribute.py inputjson inputdir outputdir")
         sys.exit(1)
     inputjson = sys.argv[1]
     inputdir = sys.argv[2]
