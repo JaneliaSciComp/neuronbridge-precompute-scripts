@@ -29,8 +29,8 @@ import time
 # constants
 
 # user should update these two constants:
-SOURCEATTRIBUTE = "imageStack"
-DESTINATIONATTRIBUTE = "maskImageStack"
+SOURCEATTRIBUTE = "screenImage"
+DESTINATIONATTRIBUTE = "maskScreenImage"
 
 # these will likely never change
 SOURCEID = "id"
@@ -43,16 +43,16 @@ Batch = collections.namedtuple("Batch", ['inputjson', 'inputdir', 'outputdir', '
 
 def runbatch(batch):
     print(f"batch {batch.start} starting at {time.asctime()}")
-    # build {id: imageStack} 
+    # build {id: attribute} 
     data = json.loads(open(batch.inputjson, 'rt').read())
-    imageStacks = {mip[SOURCEID]: mip[SOURCEATTRIBUTE] for mip in data if SOURCEATTRIBUTE in mip}
+    imageAttrs = {mip[SOURCEID]: mip[SOURCEATTRIBUTE] for mip in data if SOURCEATTRIBUTE in mip}
 
     files = os.listdir(batch.inputdir)
     for f in files[batch.start:batch.end]:
         inputpath = os.path.join(batch.inputdir, f)
         data = json.loads(open(inputpath, 'rt').read())
-        if data[DESTINATIONID] in imageStacks:
-            data[DESTINATIONATTRIBUTE] = imageStacks[data[DESTINATIONID]]    
+        if data[DESTINATIONID] in imageAttrs:
+            data[DESTINATIONATTRIBUTE] = imageAttrs[data[DESTINATIONID]]    
         outputpath = os.path.join(batch.outputdir, f)
         with open(outputpath, 'wt') as f:
             json.dump(data, f, indent=2)
@@ -83,13 +83,11 @@ def main():
     # runbatch(b)
 
     # parallel:
-    # this this is probably a one-off script, going to leave these hardcoded the batching
-    # number of files in v2.4.0/brain/cdsresults.final/flylight-vs-flyem is just under 240k,
-    #   and mouse2 has 40 hyperthreads; go with 30, which boils down to (expected) 20-25m per job
-    # later: actually took ~1h to finish all jobs; maybe overloaded disk, or should have stuck
-    #   to 19 batches, keep it under # physical cores?
-    nbatches = 30
-    batchsize = 8000
+    # hardcoded batching; number of files in v2.4.0/brain/cdsresults.final/flylight-vs-flyem is 
+    #   just under 240k; last time, doing 30 x 8000 seemed to overload something, so dial back
+    #   to fewer jobs than physical cores (which is 20)
+    nbatches = 16
+    batchsize = 15000
     batches = [Batch(inputjson, inputdir, outputdir, i * batchsize, (i + 1) * batchsize)
         for i in range(nbatches)]
     with multiprocessing.Pool(nbatches) as p:
