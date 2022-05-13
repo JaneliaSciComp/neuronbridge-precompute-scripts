@@ -1,17 +1,24 @@
-# colormipsearch-scripts
+# neuronbridge-precompute
 
-This repo contains scripts for running distributed color MIP mask searches as implemented in https://github.com/JaneliaSciComp/colormipsearch and utility scripts for related tasks. 
+This repository contains scripts for running distributed color MIP mask searches as implemented in https://github.com/JaneliaSciComp/colormipsearch and utility scripts for related tasks. 
 
 This repository is meant to record Janelia-specific operational knowledge and record how data for NeuronBridge was actually run. As such, it is:
 
-- private; appropriate for Janelia only
-- assumes/imposes a specific directory structure
-- (fairly) comprehensive; every detail except authentication secrets should appear in this repo
-    + so no secret auxiliary scripts that fix things "just this once"; if you need to do something, include the script in the repo somewhere
-- historical; use tags and/or branches as needed so what was actually run can be frozen while allowing future runs to have different details
+- **very** Janelia-centric  
+    + the scripts contain values relevant for Janelia data specifically
+    + assumes a great deal of knowledge about the Janelia Fly Light imaging project
+    + assumes/imposes a directory structure used at Janelia that is not required by the `colormipsearch` tools
+    + assumes knowledge of the other NeuronBridge repositories, particularly the website, which is the primary downstream consumer of these searches
+- fairly comprehensive; every detail except authentication secrets should appear in this repo
+    + these are scripts as actually run; they can serve as a good example how the `colormipsearch` tools are run in practice
+    + no secret auxiliary scripts that fix things "just this once"; even if something is done only once, the script should be included in the repo somewhere
+- historical; each data release's scripts are frozen by tagging the repo at appropriate times
+    + in principle, each script should be duplicated if run with different parameters in order to preserve this record
 
-**NOTE** These docs are a work in progress. Frankly, we change procedures and add features with nearly every data release, and the documentation isn't keeping up.
+**NOTE** This documentation is a work in progress. We change procedures and add features with nearly every data release, and the documentation is in constant flux.
 
+
+# General notes
 
 ## Note on running searches from scratch vs. adjusting old searches
 
@@ -20,7 +27,7 @@ As we add new features to the website, we often need to add information to old s
 
 ## Note on EM datasets: hemibrain vs. VNC
 
-colormipsearch and colormipsearch-scripts were initially developed to run color depth searches for LM images against the hemibrain EM dataset (and vice versa). It can be used for VNC as well, but hasn't been as yet.
+`colormipsearch` and `neuronbridge-precompute` were initially developed to run color depth searches for LM images against the hemibrain EM dataset (and vice versa). It can be used for VNC as well, but hasn't been as yet.
 
 In general, to do so, everything would be very similar. You could either (a) duplicate all the scripts and files with (say) a prefix of "vnc-" and run it in parallel. Hemibrain data is stored in a "brain" subdir, and you'd want to segregate the vnc in a "vnc" subdirectory.
 
@@ -49,6 +56,9 @@ These scripts were written assuming that datasets would be all run together. In 
     + probably the `.ga` directories ought to be all merged each time in to `.final`
     + but we need to be sure the merge tool can handle ever-increasing file sizes, and/or impose proper limits on how many search results we want to present online
 
+## Note on PPP results
+
+Some of the scripts in this repo reference "PPP" (Patch Per Pix) results. These are precomputed search results that are calculated using an entirely different algorithm than `colormipsearch`. As we present those results on the same website as the color depth search results, some of our scripts also do file wrangling for PPP results. These can be ignored if you don't have PPP results.
 
 
 # Directory structure
@@ -69,7 +79,7 @@ workingdir/
         target/ jar file
         src/stuff/scripts
     # this repo
-    colormipsearch-scripts/
+    neuronbridge-precompute/
         step directories/
         parameter files
         util/
@@ -102,7 +112,7 @@ Prerequisites:
         * usage: `export JACSTOKEN=$(util/get-jacs-token.py)`
         * note that the password prompt and any warnings will not be captured in the variable
 - user needs AWS auth to do the uploads
-- the working directory should have enough disk space (several Terabytes)
+- the working directory should have enough disk space (several terabytes)
 - user needs access to servers: mouse1, mouse2, imagecatcher
 - cluster access optional but highly recommended
 
@@ -124,7 +134,7 @@ General notes:
 - adjust Java paths and parameters in the global parameters file
     + note you can enable/disable debugging here, for example
 - the datasets vary quite a bit in size; when you run the same command over the EM or any of the LM datasets, the running time and disk space of the output may vary by an order of magnitude
-    + generally Split Gal4 is by far the smallest, with EM much larger, and MCFO the largest
+    + generally Split Gal4 is by far the smallest, with EM much larger, and MCFO/annotator MCFO the largest
 
 git for recording history:
 
@@ -132,8 +142,8 @@ The intention was that the user would edit various cdparams files as the workflo
 
 - do not edit anything (scripts or parameters) after it's been used
 - commit all changes and all extra scripts etc. that were needed
-- when done, add a tag describing the release just calculated
-- note: could use branches; but typically we're only calculating one dataset at a time in a linear manner
+- when done with a data release, add a tag describing the release just calculated
+- side note: could use branches to help manage this; but typically we're only calculating one dataset at a time in a linear manner
 
 # Loading color depth MIPs into JACS libraries
 
@@ -205,7 +215,7 @@ This is a confusing step!  Be careful.
 - Rob Svirskas uploads images to S3; when he does, he stores those URLs in various fields in multiple collections in the JACS Mongo db 
 - the individual json files will only populate imageURL field from the database; if they have that field, the image is uploaded
 - however, the aggregate json file will populate the imageURL field with the URL it would or should have, whether it's been uploaded or not
-- this aggreate json file is also the one Rob uses for input
+- this aggregate json file is also the one Rob uses for input
     + he wants only the images that need uploading, though, not all of them (ie, just the updates)
 - so the order of operation is something like this:
     + after the library has been created, run step 1 to create the aggregate json
@@ -225,10 +235,10 @@ Once Rob has done the upload and populated the db, it's time to start the workfl
 Step | Command | Memory | Parallel? | Computer | Running time
 ---- | ------- | ------ | --------- | -------- | ------------ 
 Step 0: Generate MIPs metadata | `groupMIPsByPublishedName` |  |  |  |  ~30 minutes
-Step 1: Prepare LM and EM JSON input | `createColorDepthSearchJSONInput` |  |  |  | ~1 hour
+Step 1: Prepare LM and EM JSON input | `createColorDepthSearchJSONInput` |  |  |  | ~1-2 hours
 Step 2: Compute color depth matches | `searchFromJSON` |  | :white_check_mark: | mouse1, mouse2  | few hours (SG4) to few days (MCFO)
 Step 3: Calculate gradient score | `gradientScore` | 180G+  | :white_check_mark: | mouse1,2 | few days 
-Step 4: Update the gradient score | `gradientScoresFromMatchedResults` | 480G | | imagecatcher | hours to days            
+Step 4: Update the gradient score | `gradientScoresFromMatchedResults` | 480G | | imagecatcher | days to weeks
 Step 5: Merge flyem results | `mergeResults` | | | | ~30-40 minutes          
 
 
@@ -257,11 +267,13 @@ Steps 2, 3, and 4 can and often should be run on the cluster. In the parameters 
 
 # Running the workflow - individual steps
 
-These steps are documented as if you are running all split gal4 and MCFO from scratch. If you are adding a new LM dataset, for example, you need not run the old LM script, and you need not regenerate any of the EM MIPs metadata files.
+These steps are documented as if you are running all split gal4 and MCFO from scratch. If you are adding a new LM dataset, for example, you need not run the old LM scripts, and you need not regenerate any of the EM MIPs metadata files.
 
 These docs pre-date the Annotator Gen1 MCFO dataset! That dataset is at least as big as all the existing data, and all running times are at least double if that dataset is included.
 
 ## Step 0: generate MIPs metadata
+
+These files will be uploaded to S3 for use by the website. They are not used in performing the precomputed searches.
 
 **Run:**
 - authentication token into JACSTOKEN variable
@@ -291,6 +303,8 @@ These docs pre-date the Annotator Gen1 MCFO dataset! That dataset is at least as
 
 ## Step 1: create JSON input files
 
+These files are the input for the precomputed searches.
+
 **Run:**
 - authentication token into JACSTOKEN variable
 - execute the following scripts 
@@ -302,7 +316,7 @@ These docs pre-date the Annotator Gen1 MCFO dataset! That dataset is at least as
     + `step1/mcfo-input-json.sh`
 
 **Expected output:**
-- running time: ~50 minutes for all three
+- running time: ~2 hours for all (as of 2022)
 - files created (v2.2 names):
 ```
     working/mips
@@ -311,13 +325,15 @@ These docs pre-date the Annotator Gen1 MCFO dataset! That dataset is at least as
         split_gal4.json
 ```
 - filenames are specified in `global-cdsparams.sh` as `EM_INPUT` etc.
-- each json file is mid-sized, ~5-500Mb
+- each json file is mid-sized, up to ~700Mb
 - optional: run `util/find-mip-mismatches.py <mips dir> <aggregate mips file>`; expected output is `ID sets match`
     + there will likely be many duplicates; this is fine, as (eg) multiple channels will count as duplicates
     + however, there should be no IDs in the directory that are not in the aggregate file; if that happens, it will cause problems later; the website will show images in the initial line/body ID search that will not have search results
 
 
 ## Step 2: Compute color depth matches
+
+This is the initial search step.
 
 ### Count data input
 
@@ -534,7 +550,7 @@ This step uploads the data to the AWS cloud. There are several goups of files to
     + do _not_ upload these files unless you are doing final deployment
 - in the https://github.com/JaneliaSciComp/colormipsearch repository, edit `DATA_NOTES.md` with details of what's included and what's changed
     + copy that file to `working/DATA_NOTES.md`
-    + **NOTE**: `publishedNames.txt` is not used anymore!  we have a Dynamo db on AWS handling that now
+    + **NOTE**: `publishedNames.txt` is has been used or not used at various times; be sure it's present if it needs to be; it should be generated by Rob from the AWS Dynamo db that he populates early on
 - schemas: if the form of any of the uploaded json files has changed (MIPs metadata or search results), schemas should be regenerated and uploaded
     + use `util/generate-schemas.sh`, or run the jar directly (it's a very straightforward command)
 - remove previous results: if you want to remove previous results, you can remove S3 objects (including "directories") like this:
@@ -542,26 +558,26 @@ This step uploads the data to the AWS cloud. There are several goups of files to
     + `aws s3 rm s3://janelia-neuronbridge-data-int/v2_2_0/metadata/cdsresults --recursive`
     + `aws s3 rm s3://janelia-neuronbridge-data-int/v2_2_0/metadata/by_body --recursive`
     + `aws s3 rm s3://janelia-neuronbridge-data-int/v2_2_0/metadata/by_line --recursive`
-    + generally this isn't needed or desireable, as we usually only upload new results
+    + generally this isn't desirable, as we usually only upload new results!
 
 **Run:**
 - on any computer that has AWS command-line client installed
 - user must have credentials for our account, configured in the client
 - (optional) if you need to remove previous results, the command looks like this:
     `aws s3 rm s3://bucket-name/example --recursive`
+    + but generally we don't need or want to do this!
 - in general, the command to upload is `util/upload.sh`
     + by default, for safety, the script will only print the commands it will execute
     + edit to comment in/out the two `EXEC_CMD` values; "echo" is the command preview; empty = do it for real
-    + usually you will _not_ want to upload the `paths.json` file until you are sure the rest of the upload is correct
 - running time:
     + upload mips: ~10 minutes
-    + upload results: ~1.5h
+    + upload results: ~2h
     + upload misc text files: <1 minute
 
 
 # Splicing Attributes
 
-Sometimes the final match json files are missing fields. For example, if the searches are run before the images are uploaded to S3, the imageURL field in the match json will not be populated. Rerunning the searches would be computationally expensive, so we need to update the matches to include the fields.
+Sometimes the final match json files are missing fields. For example, if the searches are run before the images are uploaded to S3, the imageURL field in the match json will not be populated. Or we may add useful metadata to images to support website improvements. Rerunning the searches would be computationally expensive, so we need to update the matches to include the new fields.
 
 The general flow of information is this:
 - information is loaded into the JACS database by some method
@@ -587,10 +603,10 @@ This is the easiest procedure, and it is supported by a tool in the colormipsear
     + `--input-dirs` is the directory of results to be updated
     + `-od` is the output directory; best not to overwrite input directory!
     + `--id-field` is the field in the json files used to correlate the metadata MIPs with the results; this should almost always be `id`
-        * in rare cases where `id` is not unique (eg, for `searchablePNG`), `imageURL` may suffice; determine on case-by-case basis
+        * in rare cases where `id` is not unique (eg, for `searchablePNG` field), `imageURL` may suffice; determine on case-by-case basis
     + `fields-toUpdate` is a space-separated list of the attributes to update
 - run it
-- running time: depends on what is being updated; for all LM results, can be 1-2 hours (?)
+- running time: depends on what is being updated; for all LM results, can be ~2 hours
 
 Be sure to do any file-system cleanup that is needed. Eg, remove old results directory, rename newly spliced results directory, etc.
 
@@ -600,14 +616,16 @@ Be sure to do any file-system cleanup that is needed. Eg, remove old results dir
 If we add an attribute that should be available for the mask in CDM results, the procedure is different. The tool in the colormipsearch jar does not work (currently) because:
 - the field to match on is not the same between the source jar and the destination result (usually `id` and `maskId`)
 - the field to update also doesn't match (eg, `imageStack` and `maskImageStack`)
-- `util/one-offs/update-mask-imageStack.py` was used for the `imageStack` case; it will be generalized for wider future use
+- `util/one-offs/update-mask-attribute.py` is used to do this update instead
 
 
 ## Splicing attributes onto PPP results
 
 PPP results are unusual in that they are not produced by our software. The results do not use our IDs, so they can't be correlated. As a result, the CDM result tool can't be used.
 
-Instead, we need to retrieve the info another way based on the info that does appear in the results file. For the `imageStack` attribute, that means using the slide code, alignment space, and objective of the result to look up the attribute in the JACS db directly. This was done in a set of three scripts, `util/one-offs/update-ppp-imageStack-[123].py`. These will also probably be generalized for wider future use.
+Instead, we need to retrieve the info another way based on the info that does appear in the results file. For the `imageStack` attribute, that means using the slide code, alignment space, and objective of the result to look up the attribute in the JACS db directly. This was done in a set of three scripts. The current, more general versions are `util/one-offs/update-ppp-publishedImage-[123].py`. 
+
+Note, though, that this update procedure is going to vary on a case-by-case basis. For example, `util/one-offs/update-ppp-publishedImage-2alt.py` is a variation in which a different REST endpoint is required. Fortunately, the three scripts are somewhat modular; modifications are _most_ likely to be limited to the second, with the others working as-is.
 
 
 
