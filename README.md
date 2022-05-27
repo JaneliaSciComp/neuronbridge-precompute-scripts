@@ -1,4 +1,6 @@
-# neuronbridge-precompute
+# Scripts for precomputing NeuronBridge matches
+
+[![DOI](https://zenodo.org/badge/355956072.svg)](https://zenodo.org/badge/latestdoi/355956072)
 
 This repository contains scripts for running distributed color MIP mask searches as implemented in https://github.com/JaneliaSciComp/colormipsearch and utility scripts for related tasks. 
 
