@@ -17,12 +17,14 @@ note that the empty results files contain some metadata about the mask, too; loo
       ]
     }
 
-
-
 input file must be the output json file from find-missing-results.py script
 
 the other input parameter is the directory into which to write the files; this
     is typically the appropriate cdsresults.final/ subdirectory
+
+NOTE: due for major refactoring when we implement model 3.0; ideally, this script
+won't be needed once we move our intermediate results into a db
+
 
 usage: populate-missing-results.py <inputfile> <final results directory>
 
@@ -50,6 +52,8 @@ def writeresults(missing, resultsdir):
                 "maskSampleRef": None,
                 "maskRelatedImageRefId": None,
                 "maskImageURL": None,
+                "maskImageStack": None,
+                "maskScreenImage": None,
                 "results" : [ ]
                 }
             path = os.path.join(resultsdir, mipID + ".json")
