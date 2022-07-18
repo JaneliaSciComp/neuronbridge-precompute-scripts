@@ -37,7 +37,8 @@ ELEMENTNAME = "ColorDepthMip1"
 # ELEMENTNAME = "VisuallyLosslessStack"
 
 # stuff for getting URLs from olbrisd-ws3 when my dev server is up:
-baseurl = "http://localhost:8080/api/rest-v2/publishedImage/imageWithGen1Image"
+baseurl = "http://jacs2.int.janelia.org:9190/api/rest-v2/publishedImage/imageWithGen1Image"
+# baseurl = "http://localhost:8080/api/rest-v2/publishedImage/imageWithGen1Image"
 # baseurl = "http://jacs2.int.janelia.org:9190/api/rest-v2/publishedImage/image"
 tokenvar = "JACSTOKEN"
 header = {}
