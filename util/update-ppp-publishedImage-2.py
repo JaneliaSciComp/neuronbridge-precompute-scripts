@@ -29,9 +29,11 @@ import requests
 
 # constants
 # element in the "files" object in "publishedImage" collection to retrieve
-ELEMENTNAME = "ColorDepthMip1"
 # original use: for imageStack:
-# ELEMENTNAME = "VisuallyLosslessStack"
+ELEMENTNAME = "VisuallyLosslessStack"
+
+# NOTE: if you want "ColorDepthMip1" object for screenImage, use version -2alt of this script!
+#   the call requires a different endpoint
 
 # stuff for getting URLs from JACS:
 baseurl = "http://jacs2.int.janelia.org:9190/api/rest-v2/publishedImage/image"
