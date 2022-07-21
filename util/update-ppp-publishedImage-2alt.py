@@ -37,8 +37,8 @@ ELEMENTNAME = "ColorDepthMip1"
 # ELEMENTNAME = "VisuallyLosslessStack"
 
 # stuff for getting URLs from olbrisd-ws3 when my dev server is up:
-baseurl = "http://jacs2.int.janelia.org:9190/api/rest-v2/publishedImage/imageWithGen1Image"
-# baseurl = "http://localhost:8080/api/rest-v2/publishedImage/imageWithGen1Image"
+# baseurl = "http://jacs2.int.janelia.org:9190/api/rest-v2/publishedImage/imageWithGen1Image"
+baseurl = "http://localhost:8080/api/rest-v2/publishedImage/imageWithGen1Image"
 # baseurl = "http://jacs2.int.janelia.org:9190/api/rest-v2/publishedImage/image"
 tokenvar = "JACSTOKEN"
 header = {}
@@ -64,7 +64,7 @@ def getURL(triplet):
 
 def main():
     if len(sys.argv) < 3:
-        print("usage: update-ppp-publishedImage-2.py inputIDfile outputIDfile")
+        print("usage: update-ppp-publishedImage-2alt.py inputIDfile outputIDfile")
         sys.exit(1)
     inputIDfile = sys.argv[1]
     outputIDfile = sys.argv[2]
